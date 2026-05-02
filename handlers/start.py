@@ -44,12 +44,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     text = (
         f"👋 Hey {user.first_name}\n\n"
-        "🎌 Welcome to Anime Provider Bot\n\n"
-        "Use me to search anime instantly 🔍\n\n"
-        "<b>Commands:</b>\n"
-        "• /anime Naruto\n"
-        "• /search One Piece\n"
-        "• /animelist\n"
+        "🎌 Welcome to Mahiru Anime Provider\n\n"
+        "I help you find anime instantly in groups & private chats.\n\n"
+        "<b>📌 Commands</b>\n"
+        "• /anime [name] – Get anime instantly\n"
+        "• /search Naruto – Partial search\n"
+        "• /animelist – View Available anime list\n\n"
+        "✨ Invite friends to this bot and enjoy with them 🎟\n"
+        "Our Main Network @Anime_Stream_Zone"
     )
 
     try:
