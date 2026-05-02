@@ -32,15 +32,14 @@ async def chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE)
 
         # 🔥 Premium Emoji Text
         text = (
-            "<b><tg-emoji emoji-id='5368324170671202286'></tg-emoji> Mahiru Anime Provider Activated!</b>\n\n"
+            "🎌 <b>Mahiru Anime Provider Activated!</b>\n\n"
             "I can now provide anime instantly in this group.\n\n"
-
-            "<b><tg-emoji emoji-id='5427052514094619126'></tg-emoji> How to Use</b>\n"
+            "<b>📌 How to Use</b>\n"
             "Use <code>/help</code> To See My All Commands\n"
             "• <code>/anime</code> Search Anime Name\n"
             "• <code>/animelist</code> Browse Anime\n\n"
-
-            "<tg-emoji emoji-id='5398004068667180923'></tg-emoji> Enjoy anime with your friends."
+            "✨ Enjoy and share anime with your friends\n"
+            "<b>Our Main Network</b>: @Anime_Stream_Zone"
         )
 
         # 🔥 Buttons with Premium Emoji
@@ -106,9 +105,11 @@ async def welcome_new_members(update: Update, context: ContextTypes.DEFAULT_TYPE
 
         text = (
             f"{random.choice(WELCOME_EMOJIS)} <b>Welcome</b> "
-            f"<a href='tg://user?id={user.id}'>{user.first_name}</a>\n\n"
-            "Enjoy anime here 🎌\n"
-            "Use /anime & /animelist"
+            f"<a href='tg://user?id={user.id}'>{user.first_name}</a> IN <b>{chat.title}</b>\n\n"
+            "Hope you will enjoy here 😊\n"
+            "Use me here for Anime Search 🔍\n"
+            "/anime [name] & /animelist\n\n"
+            "Enjoy & Share Anime With Your Friends 🎌"
         )
 
         try:
