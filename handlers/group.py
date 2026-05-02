@@ -33,10 +33,13 @@ async def chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE)
         await add_group(chat_id)
 
         text = (
-            "🎌 <b>Anime Provider Activated!</b>\n\n"
-            "Use /help to see commands\n"
-            "• /anime Naruto\n"
-            "• /animelist\n"
+            "🎌 <b>Mahiru Anime Provider Activated!</b>\n\n"
+            "I can now provide anime instantly in this group.\n\n"
+            "<b>📌 How to Use</b>\n"
+            "Use <code>/help</code> To See My All Commands\n"
+            "• <code>/anime</code> Search Anime Name\n"
+            "• <code>/animelist</code> Browse Anime\n\n"
+            "✨ Enjoy anime with your friends."
         )
 
         try:
