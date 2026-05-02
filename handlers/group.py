@@ -1,4 +1,4 @@
-# ==============================
+tu# ==============================
 # GROUP HANDLER
 # ==============================
 
@@ -22,30 +22,56 @@ async def chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE)
     new_status = result.new_chat_member.status
     user = result.new_chat_member.user
 
-    # Bot added
     if user.id == context.bot.id and new_status in ("member", "administrator"):
 
         chat = result.chat
         chat_id = chat.id
         adder = result.from_user
 
-        # ✅ Save group
         await add_group(chat_id)
 
+        # 🔥 Premium Emoji Text
         text = (
-            "🎌 <b>Mahiru Anime Provider Activated!</b>\n\n"
+            "<b><tg-emoji emoji-id='5368324170671202286'></tg-emoji> Mahiru Anime Provider Activated!</b>\n\n"
             "I can now provide anime instantly in this group.\n\n"
-            "<b>📌 How to Use</b>\n"
+
+            "<b><tg-emoji emoji-id='5427052514094619126'></tg-emoji> How to Use</b>\n"
             "Use <code>/help</code> To See My All Commands\n"
             "• <code>/anime</code> Search Anime Name\n"
             "• <code>/animelist</code> Browse Anime\n\n"
-            "✨ Enjoy anime with your friends."
+
+            "<tg-emoji emoji-id='5398004068667180923'></tg-emoji> Enjoy anime with your friends."
         )
 
+        # 🔥 Buttons with Premium Emoji
+        keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("📢 Updates Channel", url="https://t.me/Sahu_Bots"),
+                InlineKeyboardButton("💬 Support Chat", url="https://t.me/Anime_Search_Zone")
+            ],
+            [
+                InlineKeyboardButton(
+                    "➕ Add Me To Your Group",
+                    url=f"https://t.me/{context.bot.username}?startgroup=true"
+                )
+            ]
+        ])
+
         try:
-            await context.bot.send_photo(chat_id, photo=GROUP_PHOTO, caption=text, parse_mode="HTML")
+            await context.bot.send_photo(
+                chat_id,
+                photo=GROUP_PHOTO,
+                caption=text,
+                parse_mode="HTML",
+                reply_markup=keyboard
+            )
         except:
-            await context.bot.send_message(chat_id, text, parse_mode="HTML")
+            await context.bot.send_message(
+                chat_id,
+                text,
+                parse_mode="HTML",
+                reply_markup=keyboard
+            )
 
         # 🔥 Log
         try:
