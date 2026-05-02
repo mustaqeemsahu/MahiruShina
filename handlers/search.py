@@ -85,45 +85,69 @@ async def button_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # AUTO SEARCH (TEXT)
 # ==============================
 
-async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+import re
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ContextTypes
 
+# 🔥 Normalize function (BONUS TRICK)
+def normalize(text: str) -> str:
+    return re.sub(r'[-_]', ' ', text.lower()).strip()
+
+
+async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
 
-    text = update.message.text.lower()
+    # ✅ Normalize user input
+    text = normalize(update.message.text)
 
+    # ❌ Ignore commands
     if text.startswith("/"):
         return
 
-    animes = await get_all_anime()
+    # ❌ Ignore useless short inputs
+    if len(text) < 3:
+        return
 
+    # ✅ Extract meaningful words only
+    words = [w for w in text.split() if len(w) >= 3]
+
+    animes = await get_all_anime()
     matches = []
 
     for anime in animes:
-
         score = 0
-        name = anime["name"].lower()
 
-        if name in text:
-            score += 5
+        # ✅ Normalize anime name
+        name = normalize(anime["name"])
 
-        for word in text.split():
-            if word in name:
-                score += 2
+        # ✅ Exact phrase match (highest priority)
+        if text in name:
+            score += 10
 
-        for key in anime["keys"]:
+        # ✅ Keyword match
+        for key in anime.get("keys", []):
+            key = normalize(key)
             if key in text:
+                score += 8
+
+        # ✅ Word match (only meaningful words)
+        for word in words:
+            if word in name:
                 score += 3
 
         if score > 0:
-            anime["score"] = score
-            matches.append(anime)
+            anime_copy = anime.copy()  # ❗ prevent modifying original data
+            anime_copy["score"] = score
+            matches.append(anime_copy)
 
     if not matches:
         return
 
+    # ✅ Sort by best match
     matches = sorted(matches, key=lambda x: x["score"], reverse=True)[:5]
 
+    # ✅ Single result → direct response
     if len(matches) == 1:
         a = matches[0]
 
@@ -137,6 +161,7 @@ async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
+    # ✅ Multiple results → show selection
     keyboard = [
         [InlineKeyboardButton(a["name"], callback_data=f"anime_{a['name']}")]
         for a in matches
@@ -145,4 +170,4 @@ async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🔎 Multiple anime found",
         reply_markup=InlineKeyboardMarkup(keyboard)
-  )
+        )
