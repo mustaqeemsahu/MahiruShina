@@ -2,23 +2,26 @@
 # MAIN BOT FILE
 # ==============================
 
-from database.mongo import load_anime_cache, create_indexes
-
+import asyncio
 import logging
+
 from telegram.ext import (
     ApplicationBuilder,
     CommandHandler,
     MessageHandler,
-    filters,
     CallbackQueryHandler,
     ChatMemberHandler,
-    InlineQueryHandler
+    InlineQueryHandler,
+    filters,
 )
 
-# 🔧 Import Config
+# Config
 from config import BOT_TOKEN
 
-# 🔥 Import Handlers (you will create these next)
+# Database
+from database.mongo import load_anime_cache, create_indexes
+
+# Handlers
 from handlers.start import start
 from handlers.anime import anime_search, add_anime, del_anime
 from handlers.search import improved_anime, button_search, direct_search
@@ -33,7 +36,7 @@ from handlers.misc import (
     owner_command,
     adminlist_command,
     roast_user,
-    ping
+    ping,
 )
 
 # ==============================
@@ -41,20 +44,25 @@ from handlers.misc import (
 # ==============================
 
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    level=logging.INFO,
 )
 
 # ==============================
 # MAIN FUNCTION
 # ==============================
 
-def main():
+async def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
+
+    # 🔹 Load DB cache
+    await create_indexes()
+    await load_anime_cache()
 
     # ==============================
     # USER COMMANDS
     # ==============================
+
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_cmd))
     app.add_handler(CommandHandler("anime", anime_search))
@@ -64,13 +72,13 @@ def main():
     app.add_handler(CommandHandler("id", id_command))
     app.add_handler(CommandHandler("owner", owner_command))
     app.add_handler(CommandHandler("adminlist", adminlist_command))
-    app.add_handler(CommandHandler("admins", adminlist_command))
     app.add_handler(CommandHandler("roast", roast_user))
     app.add_handler(CommandHandler("ping", ping))
 
     # ==============================
     # ADMIN COMMANDS
     # ==============================
+
     app.add_handler(CommandHandler("add", add_anime))
     app.add_handler(CommandHandler("del", del_anime))
     app.add_handler(CommandHandler("stats", stats))
@@ -79,28 +87,43 @@ def main():
     app.add_handler(CommandHandler("bulkadd", bulk_add))
 
     # ==============================
-    # GROUP EVENTS
+    # MESSAGE HANDLERS
     # ==============================
-    app.add_handler(ChatMemberHandler(chat_member_update, ChatMemberHandler.CHAT_MEMBER))
-    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
+
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, direct_search))
 
     # ==============================
-    # CALLBACK & INLINE
+    # CALLBACK / INLINE
     # ==============================
+
     app.add_handler(CallbackQueryHandler(button_click))
     app.add_handler(InlineQueryHandler(inline_query))
 
     # ==============================
-    # AUTO SEARCH (TEXT)
+    # GROUP EVENTS
     # ==============================
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, direct_search))
 
-    print("🚀 Bot Started Successfully!")
-    app.run_polling(drop_pending_updates=True)
+    # New members join
+    app.add_handler(
+        MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members)
+    )
+
+    # Bot added / removed
+    app.add_handler(
+        ChatMemberHandler(chat_member_update, ChatMemberHandler.MY_CHAT_MEMBER)
+    )
+
+    # ==============================
+    # START BOT
+    # ==============================
+
+    print("🚀 Bot Started Successfully...")
+    await app.run_polling()
+
 
 # ==============================
 # RUN
 # ==============================
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())
