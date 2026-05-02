@@ -89,65 +89,38 @@ import re
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-# 🔥 Normalize function (BONUS TRICK)
+
+# 🔥 Normalize
 def normalize(text: str) -> str:
     return re.sub(r'[-_]', ' ', text.lower()).strip()
 
 
 async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     if not update.message:
         return
 
-    # ✅ Normalize user input
     text = normalize(update.message.text)
 
     # ❌ Ignore commands
     if text.startswith("/"):
         return
 
-    # ❌ Ignore useless short inputs
-    if len(text) < 3:
-        return
-
-    # ✅ Extract meaningful words only
-    words = [w for w in text.split() if len(w) >= 3]
-
     animes = await get_all_anime()
     matches = []
 
     for anime in animes:
-        score = 0
-
-        # ✅ Normalize anime name
         name = normalize(anime["name"])
+        keys = [normalize(k) for k in anime.get("keys", [])]
 
-        # ✅ Exact phrase match (highest priority)
-        if text in name:
-            score += 10
-
-        # ✅ Keyword match
-        for key in anime.get("keys", []):
-            key = normalize(key)
-            if key in text:
-                score += 8
-
-        # ✅ Word match (only meaningful words)
-        for word in words:
-            if word in name:
-                score += 3
-
-        if score > 0:
-            anime_copy = anime.copy()  # ❗ prevent modifying original data
-            anime_copy["score"] = score
-            matches.append(anime_copy)
+        # ✅ STRICT MATCH ONLY
+        if text == name or text in keys:
+            matches.append(anime)
 
     if not matches:
         return
 
-    # ✅ Sort by best match
-    matches = sorted(matches, key=lambda x: x["score"], reverse=True)[:5]
-
-    # ✅ Single result → direct response
+    # ✅ Single result
     if len(matches) == 1:
         a = matches[0]
 
@@ -161,7 +134,7 @@ async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
-    # ✅ Multiple results → show selection
+    # ✅ Multiple matches (rare case)
     keyboard = [
         [InlineKeyboardButton(a["name"], callback_data=f"anime_{a['name']}")]
         for a in matches
@@ -170,4 +143,4 @@ async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🔎 Multiple anime found",
         reply_markup=InlineKeyboardMarkup(keyboard)
-        )
+    )
