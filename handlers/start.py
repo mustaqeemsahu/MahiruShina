@@ -37,10 +37,18 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # 🔗 Buttons
     bot_username = (await context.bot.get_me()).username
 
-    keyboard = [
-        [InlineKeyboardButton("📢 Join Channel", url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}")],
-        [InlineKeyboardButton("➕ Add Me To Group", url=f"https://t.me/{bot_username}?startgroup=true")]
-    ]
+    keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("📢 Updates Channel", url="https://t.me/Sahu_Bots"),
+                InlineKeyboardButton("💬 Support Chat", url="https://t.me/Anime_Search_Zone")
+            ],
+            [
+                InlineKeyboardButton(
+                    "➕ Add Me To Your Group",
+                    url=f"https://t.me/{context.bot.username}?startgroup=true"
+                )
+            ]
+        ])
 
     text = (
         f"👋 Hey {user.first_name}\n\n"
