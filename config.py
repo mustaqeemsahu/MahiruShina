@@ -34,7 +34,7 @@ ANIME_PER_PAGE = 25
 # MEDIA
 # ==============================
 
-START_PHOTO = "https://files.catbox.moe/b7yds6.jpg"
-GROUP_PHOTO = "https://files.catbox.moe/b7yds6.jpg"
+START_PHOTO = "https://files.catbox.moe/ichom4.jpg"
+GROUP_PHOTO = "https://files.catbox.moe/ichom4.jpg"
 
 WELCOME_EMOJIS = ["👋", "✨", "🌸", "🔥", "💫"]
