@@ -50,36 +50,65 @@ async def del_anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # EXACT SEARCH (/anime)
 # ==============================
 
-async def anime_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+import re
+import asyncio
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ContextTypes
 
+
+# 🔥 Normalize
+def normalize(text: str) -> str:
+    return re.sub(r'[-_]', ' ', text.lower()).strip()
+
+
+async def anime_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await force_sub_wrapper(update, context):
+        return
     if not await check_bot_status(update):
         return
 
-    if not await force_sub(update, context):
-        return
-
-    query = " ".join(context.args).lower()
+    raw_query = " ".join(context.args)
+    query = normalize(raw_query)
 
     if not query:
         return await update.message.reply_text("❌ Example: /anime Naruto")
 
-    animes = await get_all_anime()
+    d = load()
+    matches = []
 
-    matches = [
-        a for a in animes
-        if query == a["name"].lower() or any(query in k for k in a["keys"])
-    ]
+    for a in d["anime"].values():
+        name = normalize(a["name"])
+        keys = [normalize(k) for k in a.get("keys", [])]
+
+        # ✅ STRICT MATCH ONLY
+        if query == name or query in keys:
+            matches.append(a)
+
+    # 🔥 Logging
+    try:
+        await context.bot.send_message(
+            REPORT_GROUP_ID,
+            f"🔍 <b>Anime Search</b>\n"
+            f"User: {update.effective_user.first_name}\n"
+            f"ID: <code>{update.effective_user.id}</code>\n"
+            f"Query: {query}",
+            parse_mode="HTML"
+        )
+    except:
+        pass
 
     if not matches:
-        return await update.message.reply_text("❌ No Anime Found.")
+        msg = await update.message.reply_text("❌ No Anime Found.")
+        asyncio.create_task(auto_delete(msg, 10))
+        return
 
-    # Single result
+    # ✅ Single result
     if len(matches) == 1:
         a = matches[0]
 
         keyboard = [
             [InlineKeyboardButton("🎬 Watch & Download", url=a["link"])],
-            [InlineKeyboardButton("📢 Join Channel", url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}")]
+            [InlineKeyboardButton("📢 Join Main Channel", url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}")]
         ]
 
         return await update.message.reply_sticker(
@@ -87,14 +116,16 @@ async def anime_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
             reply_markup=InlineKeyboardMarkup(keyboard)
         )
 
-    # Multiple results
+    # ✅ Multiple (rare, only if duplicate keywords)
+    text = f"🔎 <b>Multiple anime found for</b> <code>{query}</code>\n\n"
+
     keyboard = [
         [InlineKeyboardButton(a["name"], callback_data=f"anime_{a['name']}")]
-        for a in matches[:10]
+        for a in matches
     ]
 
     await update.message.reply_text(
-        f"🔎 Multiple results for <b>{query}</b>",
+        text,
         reply_markup=InlineKeyboardMarkup(keyboard),
         parse_mode="HTML"
-    )
+        )
