@@ -55,8 +55,11 @@ def main():
 
     # DB init
     try:
-        create_indexes()
-        load_anime_cache()
+        import asyncio
+
+loop = asyncio.get_event_loop()
+loop.run_until_complete(create_indexes())
+loop.run_until_complete(load_anime_cache())
         print("✅ Database Connected")
     except Exception as e:
         print(f"⚠️ DB Error: {e}")
