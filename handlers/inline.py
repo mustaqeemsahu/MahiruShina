@@ -2,7 +2,7 @@
 # INLINE HANDLER
 # ==============================
 
-from telegram import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedSticker, Updates
+from telegram import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedSticker, Update
 from telegram.ext import ContextTypes
 
 from database.mongo import get_all_anime
