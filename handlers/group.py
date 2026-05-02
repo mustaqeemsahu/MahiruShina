@@ -16,33 +16,48 @@ import random
 
 async def chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    result = update.chat_member
+    result = update.my_chat_member  # ✅ MUST use this
+
+    if not result:
+        return
 
     old_status = result.old_chat_member.status
     new_status = result.new_chat_member.status
     user = result.new_chat_member.user
 
+    # ✅ Trigger ONLY when bot is added
     if user.id == context.bot.id and new_status in ("member", "administrator"):
 
         chat = result.chat
         chat_id = chat.id
+        chat_title = chat.title or "Unknown Group"
         adder = result.from_user
 
-        await add_group(chat_id)
+        # ==============================
+        # SAVE GROUP
+        # ==============================
+        try:
+            await add_group(chat_id)
+        except Exception as e:
+            print(f"[ERROR] Add group failed: {e}")
 
-        # 🔥 Premium Emoji Text
+        # ==============================
+        # WELCOME MESSAGE
+        # ==============================
         text = (
             "🎌 <b>Mahiru Anime Provider Activated!</b>\n\n"
-            "I can now provide anime instantly in this group.\n\n"
-            "<b>📌 How to Use</b>\n"
-            "Use <code>/help</code> To See My All Commands\n"
-            "• <code>/anime</code> Search Anime Name\n"
-            "• <code>/animelist</code> Browse Anime\n\n"
-            "✨ Enjoy and share anime with your friends\n"
-            "<b>Our Main Network</b>: @Anime_Stream_Zone"
+            "✨ I can now provide anime instantly in this group.\n\n"
+
+            "<b>📌 How To Use</b>\n"
+            "• <code>/anime Naruto</code> – Get anime\n"
+            "• <code>/animelist</code> – Browse list\n"
+            "• <code>/help</code> – All commands\n\n"
+
+            "⚡ Or just type anime name directly!\n\n"
+
+            "📢 <b>Our Network</b>: @Anime_Stream_Zone"
         )
 
-        # 🔥 Buttons with Premium Emoji
         keyboard = InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("📢 Updates Channel", url="https://t.me/Sahu_Bots"),
@@ -56,35 +71,46 @@ async def chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE)
             ]
         ])
 
+        # ==============================
+        # SEND WELCOME MESSAGE
+        # ==============================
         try:
             await context.bot.send_photo(
-                chat_id,
+                chat_id=chat_id,
                 photo=GROUP_PHOTO,
                 caption=text,
                 parse_mode="HTML",
                 reply_markup=keyboard
             )
-        except:
-            await context.bot.send_message(
-                chat_id,
-                text,
-                parse_mode="HTML",
-                reply_markup=keyboard
-            )
+        except Exception as e:
+            print(f"[ERROR] Photo send failed: {e}")
+            try:
+                await context.bot.send_message(
+                    chat_id=chat_id,
+                    text=text,
+                    parse_mode="HTML",
+                    reply_markup=keyboard
+                )
+            except Exception as e:
+                print(f"[ERROR] Message send failed: {e}")
 
-        # 🔥 Log
+        # ==============================
+        # LOG TO REPORT GROUP
+        # ==============================
         try:
             await context.bot.send_message(
-                REPORT_GROUP_ID,
-                f"<b>Bot Added</b>\n\n"
-                f"👥 {chat.title}\n"
-                f"🆔 <code>{chat_id}</code>\n"
-                f"👤 {adder.first_name}\n"
-                f"🕒 {now()}",
+                chat_id=REPORT_GROUP_ID,
+                text=(
+                    "<b>🤖 Bot Added To Group</b>\n\n"
+                    f"👥 <b>Group:</b> {chat_title}\n"
+                    f"🆔 <code>{chat_id}</code>\n"
+                    f"👤 <b>Added By:</b> {adder.first_name if adder else 'Unknown'}\n"
+                    f"🕒 <b>Time:</b> {now()}"
+                ),
                 parse_mode="HTML"
             )
-        except:
-            pass
+        except Exception as e:
+            print(f"[ERROR] Log failed: {e}")
 
 
 # ==============================
