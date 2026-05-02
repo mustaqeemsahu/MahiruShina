@@ -2,7 +2,6 @@
 # MAIN BOT FILE
 # ==============================
 
-import asyncio
 import logging
 
 from telegram.ext import (
@@ -15,13 +14,13 @@ from telegram.ext import (
     filters,
 )
 
-# Config
-from config import BOT_TOKEN
-
-# Database
+# 🔧 Database
 from database.mongo import load_anime_cache, create_indexes
 
-# Handlers
+# ⚙️ Config
+from config import BOT_TOKEN
+
+# 📦 Handlers
 from handlers.start import start
 from handlers.anime import anime_search, add_anime, del_anime
 from handlers.search import improved_anime, button_search, direct_search
@@ -42,7 +41,6 @@ from handlers.misc import (
 # ==============================
 # LOGGING
 # ==============================
-
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     level=logging.INFO,
@@ -51,18 +49,22 @@ logging.basicConfig(
 # ==============================
 # MAIN FUNCTION
 # ==============================
-
-async def main():
+def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    # 🔹 Load DB cache
-    await create_indexes()
-    await load_anime_cache()
+    # ==========================
+    # LOAD DB CACHE
+    # ==========================
+    try:
+        create_indexes()
+        load_anime_cache()
+        print("✅ Database Connected")
+    except Exception as e:
+        print(f"⚠️ Database Error: {e}")
 
-    # ==============================
+    # ==========================
     # USER COMMANDS
-    # ==============================
-
+    # ==========================
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_cmd))
     app.add_handler(CommandHandler("anime", anime_search))
@@ -72,13 +74,13 @@ async def main():
     app.add_handler(CommandHandler("id", id_command))
     app.add_handler(CommandHandler("owner", owner_command))
     app.add_handler(CommandHandler("adminlist", adminlist_command))
+    app.add_handler(CommandHandler("admins", adminlist_command))
     app.add_handler(CommandHandler("roast", roast_user))
     app.add_handler(CommandHandler("ping", ping))
 
-    # ==============================
+    # ==========================
     # ADMIN COMMANDS
-    # ==============================
-
+    # ==========================
     app.add_handler(CommandHandler("add", add_anime))
     app.add_handler(CommandHandler("del", del_anime))
     app.add_handler(CommandHandler("stats", stats))
@@ -86,44 +88,36 @@ async def main():
     app.add_handler(CommandHandler("bc", broadcast))
     app.add_handler(CommandHandler("bulkadd", bulk_add))
 
-    # ==============================
-    # MESSAGE HANDLERS
-    # ==============================
-
+    # ==========================
+    # MESSAGE HANDLER
+    # ==========================
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, direct_search))
 
-    # ==============================
-    # CALLBACK / INLINE
-    # ==============================
-
+    # ==========================
+    # CALLBACK BUTTONS
+    # ==========================
     app.add_handler(CallbackQueryHandler(button_click))
+
+    # ==========================
+    # INLINE MODE
+    # ==========================
     app.add_handler(InlineQueryHandler(inline_query))
 
-    # ==============================
+    # ==========================
     # GROUP EVENTS
-    # ==============================
+    # ==========================
+    app.add_handler(ChatMemberHandler(chat_member_update, ChatMemberHandler.MY_CHAT_MEMBER))
+    app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
 
-    # New members join
-    app.add_handler(
-        MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members)
-    )
-
-    # Bot added / removed
-    app.add_handler(
-        ChatMemberHandler(chat_member_update, ChatMemberHandler.MY_CHAT_MEMBER)
-    )
-
-    # ==============================
+    # ==========================
     # START BOT
-    # ==============================
-
+    # ==========================
     print("🚀 Bot Started Successfully...")
-    await app.run_polling()
+    app.run_polling()
 
 
 # ==============================
-# RUN
+# ENTRY POINT
 # ==============================
-
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
