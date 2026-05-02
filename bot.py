@@ -3,6 +3,7 @@
 # ==============================
 
 import os
+import asyncio
 import logging
 
 from telegram.ext import (
@@ -19,7 +20,7 @@ from telegram.ext import (
 from config import BOT_TOKEN
 
 # Database
-from database.mongo import load_anime_cache, create_indexes
+from database.mongo import create_indexes, load_anime_cache
 
 # Handlers
 from handlers.start import start
@@ -48,24 +49,24 @@ logging.basicConfig(
 )
 
 # ==============================
-# MAIN
+# MAIN FUNCTION
 # ==============================
 def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
-    # DB init
-    import asyncio
-
-try:
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(create_indexes())
-    loop.run_until_complete(load_anime_cache())
-    print("✅ Database Connected")
-except Exception as e:
-    print(f"⚠️ Database Error: {e}")
+    # ==========================
+    # DATABASE INIT (ASYNC SAFE)
+    # ==========================
+    try:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(create_indexes())
+        loop.run_until_complete(load_anime_cache())
+        print("✅ Database Connected")
+    except Exception as e:
+        print(f"⚠️ Database Error: {e}")
 
     # ==========================
-    # COMMANDS
+    # USER COMMANDS
     # ==========================
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_cmd))
@@ -76,33 +77,41 @@ except Exception as e:
     app.add_handler(CommandHandler("id", id_command))
     app.add_handler(CommandHandler("owner", owner_command))
     app.add_handler(CommandHandler("adminlist", adminlist_command))
+    app.add_handler(CommandHandler("admins", adminlist_command))
     app.add_handler(CommandHandler("roast", roast_user))
     app.add_handler(CommandHandler("ping", ping))
 
-    # ADMIN
+    # ==========================
+    # ADMIN COMMANDS
+    # ==========================
     app.add_handler(CommandHandler("add", add_anime))
     app.add_handler(CommandHandler("del", del_anime))
     app.add_handler(CommandHandler("stats", stats))
     app.add_handler(CommandHandler("broadcast", broadcast))
+    app.add_handler(CommandHandler("bc", broadcast))
     app.add_handler(CommandHandler("bulkadd", bulk_add))
 
-    # MESSAGE
+    # ==========================
+    # MESSAGE HANDLER
+    # ==========================
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, direct_search))
 
+    # ==========================
     # CALLBACK / INLINE
+    # ==========================
     app.add_handler(CallbackQueryHandler(button_click))
     app.add_handler(InlineQueryHandler(inline_query))
 
+    # ==========================
     # GROUP EVENTS
+    # ==========================
     app.add_handler(ChatMemberHandler(chat_member_update, ChatMemberHandler.MY_CHAT_MEMBER))
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_members))
 
     # ==========================
     # WEBHOOK SETUP
     # ==========================
-
     PORT = int(os.environ.get("PORT", 10000))
-
     RENDER_URL = os.environ.get("RENDER_EXTERNAL_URL")
 
     if not RENDER_URL:
@@ -112,7 +121,9 @@ except Exception as e:
 
     print(f"🌐 Webhook URL: {WEBHOOK_URL}")
 
-    # RUN WEBHOOK
+    # ==========================
+    # START WEBHOOK
+    # ==========================
     app.run_webhook(
         listen="0.0.0.0",
         port=PORT,
@@ -122,7 +133,7 @@ except Exception as e:
 
 
 # ==============================
-# ENTRY
+# ENTRY POINT
 # ==============================
 if __name__ == "__main__":
     main()
