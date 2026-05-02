@@ -2,8 +2,8 @@
 # INLINE HANDLER
 # ==============================
 
-from telegram import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedSticker
-from telegram.ext import ContextTypes, Update
+from telegram import InlineQueryResultArticle, InputTextMessageContent, InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultCachedSticker, Updates
+from telegram.ext import ContextTypes
 
 from database.mongo import get_all_anime
 from config import FORCE_CHANNEL
