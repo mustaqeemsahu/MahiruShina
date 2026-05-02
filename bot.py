@@ -2,6 +2,8 @@
 # MAIN BOT FILE
 # ==============================
 
+from database.mongo import load_anime_cache, create_indexes
+
 import logging
 from telegram.ext import (
     ApplicationBuilder,
