@@ -54,15 +54,15 @@ def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     # DB init
-    try:
-        import asyncio
+    import asyncio
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(create_indexes())
-loop.run_until_complete(load_anime_cache())
-        print("✅ Database Connected")
-    except Exception as e:
-        print(f"⚠️ DB Error: {e}")
+try:
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(create_indexes())
+    loop.run_until_complete(load_anime_cache())
+    print("✅ Database Connected")
+except Exception as e:
+    print(f"⚠️ Database Error: {e}")
 
     # ==========================
     # COMMANDS
