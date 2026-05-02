@@ -22,7 +22,7 @@ if not MONGO_URI:
 # BOT SETTINGS
 # ==============================
 
-FORCE_CHANNEL = "@Team_Sahuu"
+FORCE_CHANNEL = "@Anime_Stream_Zone"
 
 ADMIN_IDS = [7953380478, 5208998008]
 
@@ -34,7 +34,7 @@ ANIME_PER_PAGE = 25
 # MEDIA
 # ==============================
 
-START_PHOTO = "AgACAgUAAxkBAAICQGm1FC6u4tZ-_yIdBE69O2Cgk134AAImD2sbCjyoVYkRWpbe68nrAQADAgADeQADOgQ"
-GROUP_PHOTO = "AgACAgUAAxkBAAICQGm1FC6u4tZ-_yIdBE69O2Cgk134AAImD2sbCjyoVYkRWpbe68nrAQADAgADeQADOgQ"
+START_PHOTO = "https://files.catbox.moe/b7yds6.jpg"
+GROUP_PHOTO = "https://files.catbox.moe/b7yds6.jpg"
 
 WELCOME_EMOJIS = ["👋", "✨", "🌸", "🔥", "💫"]
