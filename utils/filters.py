@@ -41,7 +41,7 @@ async def force_sub(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [[InlineKeyboardButton("📢 Join Channel", url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}")]]
 
     await update.message.reply_text(
-        "❌ Join channel to use bot",
+        "❌ <b>Access Denied!</b>\n\nYou must join our official channel to use this bot and search anime.",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
