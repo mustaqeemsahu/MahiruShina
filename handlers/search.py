@@ -228,13 +228,13 @@ async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
         keyboard = [
             [
                 InlineKeyboardButton(
-                    "🎬 Watch & Download",
+                    "🎬 𝗪𝗮𝘁𝗰𝗵 & 𝗗𝗼𝘄𝗻𝗹𝗼𝗮𝗱",
                     url=anime["link"]
                 )
             ],
             [
                 InlineKeyboardButton(
-                    "📢 Join Channel",
+                    "📢 𝗝𝗼𝗶𝗻 𝗠𝗮𝗶𝗻 𝗖𝗵𝗮𝗻𝗻𝗲𝗹",
                     url=f"https://t.me/{FORCE_CHANNEL.replace('@', '')}"
                 )
             ]
