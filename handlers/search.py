@@ -82,65 +82,230 @@ async def button_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==============================
-# AUTO SEARCH (TEXT)
+# AUTO SEARCH (TEXT MESSAGE)
 # ==============================
 
 import re
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+import asyncio
+
+from telegram import (
+    Update,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
+
 from telegram.ext import ContextTypes
 
+from database.mongo import get_all_anime
+from config import FORCE_CHANNEL
 
-# 🔥 Normalize
+
+# ==============================
+# NORMALIZE TEXT
+# ==============================
+
 def normalize(text: str) -> str:
-    return re.sub(r'[-_]', ' ', text.lower()).strip()
+    text = text.lower()
 
+    # remove symbols
+    text = re.sub(r"[^a-z0-9\s]", " ", text)
+
+    # replace - _
+    text = re.sub(r"[-_]", " ", text)
+
+    # remove extra spaces
+    text = re.sub(r"\s+", " ", text)
+
+    return text.strip()
+
+
+# ==============================
+# AUTO DELETE
+# ==============================
+
+async def auto_delete(message, sec=45):
+
+    await asyncio.sleep(sec)
+
+    try:
+        await message.delete()
+    except:
+        pass
+
+
+# ==============================
+# DIRECT SEARCH
+# ==============================
 
 async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
+    # safety
     if not update.message:
         return
 
-    text = normalize(update.message.text)
+    # raw message
+    raw_text = update.message.text
 
-    # ❌ Ignore commands
+    if not raw_text:
+        return
+
+    # normalize
+    text = normalize(raw_text)
+
+    # ignore commands
     if text.startswith("/"):
         return
 
+    # ignore very short messages
+    if len(text) < 2:
+        return
+
+    # database
     animes = await get_all_anime()
+
     matches = []
 
-    for anime in animes:
-        name = normalize(anime["name"])
-        keys = [normalize(k) for k in anime.get("keys", [])]
+    # user words
+    user_words = text.split()
 
-        # ✅ STRICT MATCH ONLY
-        if text == name or text in keys:
+    # ==============================
+    # SEARCH SYSTEM
+    # ==============================
+
+    for anime in animes:
+
+        anime_name = normalize(anime.get("name", ""))
+
+        anime_keys = [
+            normalize(k)
+            for k in anime.get("keys", [])
+        ]
+
+        searchable = []
+
+        # full anime name
+        searchable.append(anime_name)
+
+        # anime name words
+        searchable.extend(anime_name.split())
+
+        # keywords
+        searchable.extend(anime_keys)
+
+        found = False
+
+        for word in user_words:
+
+            # skip tiny words
+            if len(word) <= 2:
+                continue
+
+            # exact match
+            if word in searchable:
+                found = True
+                break
+
+            # partial match
+            for item in searchable:
+
+                if word in item or item in word:
+                    found = True
+                    break
+
+            if found:
+                break
+
+        if found:
             matches.append(anime)
+
+    # ==============================
+    # REMOVE DUPLICATES
+    # ==============================
+
+    unique_matches = []
+
+    added = set()
+
+    for anime in matches:
+
+        if anime["name"] not in added:
+
+            unique_matches.append(anime)
+
+            added.add(anime["name"])
+
+    matches = unique_matches
+
+    # ==============================
+    # NO RESULT
+    # ==============================
 
     if not matches:
         return
 
-    # ✅ Single result
+    # ==============================
+    # SINGLE RESULT
+    # ==============================
+
     if len(matches) == 1:
-        a = matches[0]
+
+        anime = matches[0]
 
         keyboard = [
-            [InlineKeyboardButton("🎬 Watch & Download", url=a["link"])],
-            [InlineKeyboardButton("📢 Join Channel", url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}")]
+            [
+                InlineKeyboardButton(
+                    "🎬 Watch & Download",
+                    url=anime["link"]
+                )
+            ],
+            [
+                InlineKeyboardButton(
+                    "📢 Join Main Channel",
+                    url=f"https://t.me/{FORCE_CHANNEL.replace('@', '')}"
+                )
+            ]
         ]
 
-        return await update.message.reply_sticker(
-            sticker=a["sticker"],
-            reply_markup=InlineKeyboardMarkup(keyboard)
+        try:
+
+            sent = await update.message.reply_sticker(
+                sticker=anime["sticker"],
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
+
+            asyncio.create_task(auto_delete(sent, 300))
+
+        except:
+
+            sent = await update.message.reply_text(
+                f"🎌 {anime['name']}",
+                reply_markup=InlineKeyboardMarkup(keyboard)
+            )
+
+            asyncio.create_task(auto_delete(sent, 300))
+
+        return
+
+    # ==============================
+    # MULTIPLE RESULTS
+    # ==============================
+
+    keyboard = []
+
+    for anime in matches[:10]:
+
+        keyboard.append(
+            [
+                InlineKeyboardButton(
+                    anime["name"],
+                    callback_data=f"anime_{anime['name']}"
+                )
+            ]
         )
 
-    # ✅ Multiple matches (rare case)
-    keyboard = [
-        [InlineKeyboardButton(a["name"], callback_data=f"anime_{a['name']}")]
-        for a in matches
-    ]
-
-    await update.message.reply_text(
-        "🔎 Multiple anime found",
+    sent = await update.message.reply_text(
+        "🔎 Multiple Anime Found\n\nSelect One:",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
+
+    asyncio.create_task(auto_delete(sent, 300))
