@@ -82,7 +82,7 @@ async def button_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # ==============================
-# AUTO SEARCH (TEXT MESSAGE)
+# AUTO SEARCH (KEYWORD IN SENTENCE)
 # ==============================
 
 import re
@@ -101,19 +101,15 @@ from config import FORCE_CHANNEL
 
 
 # ==============================
-# NORMALIZE TEXT
+# NORMALIZE
 # ==============================
 
 def normalize(text: str) -> str:
+
     text = text.lower()
 
-    # remove symbols
     text = re.sub(r"[^a-z0-9\s]", " ", text)
 
-    # replace - _
-    text = re.sub(r"[-_]", " ", text)
-
-    # remove extra spaces
     text = re.sub(r"\s+", " ", text)
 
     return text.strip()
@@ -123,7 +119,7 @@ def normalize(text: str) -> str:
 # AUTO DELETE
 # ==============================
 
-async def auto_delete(message, sec=45):
+async def auto_delete(message, sec=300):
 
     await asyncio.sleep(sec)
 
@@ -139,109 +135,87 @@ async def auto_delete(message, sec=45):
 
 async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    # safety
     if not update.message:
         return
 
-    # raw message
     raw_text = update.message.text
 
     if not raw_text:
         return
 
-    # normalize
+    # ignore commands
+    if raw_text.startswith("/"):
+        return
+
+    # normalize sentence
     text = normalize(raw_text)
 
-    # ignore commands
-    if text.startswith("/"):
-        return
-
-    # ignore very short messages
-    if len(text) < 2:
-        return
-
-    # database
     animes = await get_all_anime()
 
     matches = []
 
-    # user words
-    user_words = text.split()
-
     # ==============================
-    # SEARCH SYSTEM
+    # KEYWORD DETECTION
     # ==============================
 
     for anime in animes:
 
-        anime_name = normalize(anime.get("name", ""))
+        anime_name = anime.get("name", "")
 
-        anime_keys = [
-            normalize(k)
-            for k in anime.get("keys", [])
-        ]
+        anime_keys = anime.get("keys", [])
 
-        searchable = []
+        found_keyword = None
 
-        # full anime name
-        searchable.append(anime_name)
+        # check anime name also
+        all_keywords = anime_keys + [anime_name]
 
-        # anime name words
-        searchable.extend(anime_name.split())
+        for keyword in all_keywords:
 
-        # keywords
-        searchable.extend(anime_keys)
+            keyword = normalize(keyword)
 
-        found = False
+            # keyword exists in sentence
+            if keyword and keyword in text:
 
-        for word in user_words:
-
-            # skip tiny words
-            if len(word) <= 2:
-                continue
-
-            # exact match
-            if word in searchable:
-                found = True
+                found_keyword = keyword
                 break
 
-            # partial match
-            for item in searchable:
+        if found_keyword:
 
-                if word in item or item in word:
-                    found = True
-                    break
+            matches.append({
+                "anime": anime,
+                "keyword": found_keyword,
+                "length": len(found_keyword)
+            })
 
-            if found:
-                break
-
-        if found:
-            matches.append(anime)
+    # no result
+    if not matches:
+        return
 
     # ==============================
-    # REMOVE DUPLICATES
+    # LONGEST KEYWORD FIRST
     # ==============================
 
-    unique_matches = []
+    matches.sort(
+        key=lambda x: x["length"],
+        reverse=True
+    )
+
+    # remove duplicates
+    final_matches = []
 
     added = set()
 
-    for anime in matches:
+    for item in matches:
+
+        anime = item["anime"]
 
         if anime["name"] not in added:
 
-            unique_matches.append(anime)
+            final_matches.append(anime)
 
             added.add(anime["name"])
 
-    matches = unique_matches
-
-    # ==============================
-    # NO RESULT
-    # ==============================
-
-    if not matches:
-        return
+    matches = final_matches[:5]
 
     # ==============================
     # SINGLE RESULT
@@ -260,7 +234,7 @@ async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
             ],
             [
                 InlineKeyboardButton(
-                    "📢 Join Main Channel",
+                    "📢 Join Channel",
                     url=f"https://t.me/{FORCE_CHANNEL.replace('@', '')}"
                 )
             ]
@@ -273,16 +247,14 @@ async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 reply_markup=InlineKeyboardMarkup(keyboard)
             )
 
-            asyncio.create_task(auto_delete(sent, 300))
-
         except:
 
             sent = await update.message.reply_text(
-                f"🎌 {anime['name']}",
+                anime["name"],
                 reply_markup=InlineKeyboardMarkup(keyboard)
             )
 
-            asyncio.create_task(auto_delete(sent, 300))
+        asyncio.create_task(auto_delete(sent))
 
         return
 
@@ -292,20 +264,18 @@ async def direct_search(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     keyboard = []
 
-    for anime in matches[:10]:
+    for anime in matches:
 
-        keyboard.append(
-            [
-                InlineKeyboardButton(
-                    anime["name"],
-                    callback_data=f"anime_{anime['name']}"
-                )
-            ]
-        )
+        keyboard.append([
+            InlineKeyboardButton(
+                anime["name"],
+                callback_data=f"anime_{anime['name']}"
+            )
+        ])
 
     sent = await update.message.reply_text(
-        "🔎 Multiple Anime Found\n\nSelect One:",
+        "🔎 Multiple Anime Found",
         reply_markup=InlineKeyboardMarkup(keyboard)
     )
 
-    asyncio.create_task(auto_delete(sent, 300))
+    asyncio.create_task(auto_delete(sent))
