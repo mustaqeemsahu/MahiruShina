@@ -48,27 +48,27 @@ async def chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE)
         # WELCOME MESSAGE
         # ==============================
         text = (
-            "🎌 <b>Mahiru Anime Provider Activated!</b>\n\n"
-            "✨ I can now provide anime instantly in this group.\n\n"
+            "🎌 <b>Mahiru Anime Provider Activated!</b>\n"
+            "✨ <b>I can now provide anime instantly in this group.</b>\n\n"
 
-            "<b>📌 How To Use</b>\n"
+            "<b>📌 How To Use This Bot</b>\n"
             "• <code>/anime Naruto</code> – Get anime\n"
-            "• <code>/animelist</code> – Browse list\n"
-            "• <code>/help</code> – All commands\n\n"
+            "• <code>/animelist</code> – Get all Anime List\n"
+            "• <code>/help</code> – To See My All commands\n\n"
 
             "⚡ Or just type anime name directly!\n\n"
 
-            "📢 <b>Our Network</b>: @Anime_Stream_Zone"
+            "📢 <b>From</b>: @Anime_Stream_Zone"
         )
 
         keyboard = InlineKeyboardMarkup([
             [
-                InlineKeyboardButton("📢 Updates Channel", url="https://t.me/Sahu_Bots"),
-                InlineKeyboardButton("💬 Support Chat", url="https://t.me/Anime_Search_Zone")
+                InlineKeyboardButton("📢 ᴜᴩᴅᴀᴛᴇꜱ", url="https://t.me/Sahu_Bots"),
+                InlineKeyboardButton("💬 ᴄʜᴀᴛ ɢᴄ", url="https://t.me/Anime_Search_Zone")
             ],
             [
                 InlineKeyboardButton(
-                    "➕ Add Me To Your Group",
+                    "➕ ᴀᴅᴅ ᴍᴇ ᴛᴏ  ᴏᴜʀ ɢʀᴏᴜᴩ",
                     url=f"https://t.me/{context.bot.username}?startgroup=true"
                 )
             ]
