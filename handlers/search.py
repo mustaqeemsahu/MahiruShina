@@ -119,7 +119,7 @@ def normalize(text: str) -> str:
 # AUTO DELETE
 # ==============================
 
-async def auto_delete(message, sec=300):
+async def auto_delete(message, sec=43200):
 
     await asyncio.sleep(sec)
 
