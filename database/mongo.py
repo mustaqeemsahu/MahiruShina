@@ -39,6 +39,13 @@ async def add_user(user_id: int):
 async def get_all_users():
     return [u["_id"] async for u in users_col.find()]
 
+async def remove_user(user_id: int):
+    await users_col.delete_one({"_id": user_id})
+
+
+async def remove_group(chat_id: int):
+    await groups_col.delete_one({"_id": chat_id})
+
 
 # ==============================
 # GROUP SYSTEM
