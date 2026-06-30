@@ -30,7 +30,7 @@ from handlers.animelist import animelist
 from handlers.group import chat_member_update, welcome_new_members
 from handlers.callback import button_click
 from handlers.inline import inline_query
-from handlers.admin import stats, broadcast, bulk_add
+from handlers.admin import stats, broadcast, bulk_add, forward_broadcast
 from handlers.misc import (
     help_cmd,
     id_command,
@@ -90,6 +90,7 @@ def main():
     app.add_handler(CommandHandler("broadcast", broadcast))
     app.add_handler(CommandHandler("bc", broadcast))
     app.add_handler(CommandHandler("bulkadd", bulk_add))
+    app.add_handler(CommandHandler("fbc", forward_broadcast))
 
     # ==========================
     # MESSAGE HANDLER
