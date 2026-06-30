@@ -95,8 +95,19 @@ async def _copy_message(context, msg, chat_id, pin=False):
         except Exception:
             return False
 
-    except (Forbidden, BadRequest):
-        return False
+    except Forbidden:
+    if str(chat_id).startswith("-100"):
+        await remove_group(chat_id)
+    else:
+        await remove_user(chat_id)
+    return False
+
+    except BadRequest:
+    if str(chat_id).startswith("-100"):
+        await remove_group(chat_id)
+    else:
+        await remove_user(chat_id)
+    return False
 
     except Exception:
         return False
@@ -153,8 +164,19 @@ async def _forward_message(context, msg, chat_id, pin=False):
         except Exception:
             return False
 
-    except (Forbidden, BadRequest):
-        return False
+    except Forbidden:
+    if str(chat_id).startswith("-100"):
+        await remove_group(chat_id)
+    else:
+        await remove_user(chat_id)
+    return False
+
+    except BadRequest:
+    if str(chat_id).startswith("-100"):
+        await remove_group(chat_id)
+    else:
+        await remove_user(chat_id)
+    return False
 
     except Exception:
         return False
@@ -252,8 +274,8 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         processed += 1
 
-        if processed % 100 == 0:
-
+        if processed % 25 == 0:
+            
             await status.edit_text(
                 "🚀 Broadcasting...\n\n"
                 f"Processed : {processed}/{total}\n"
@@ -279,8 +301,8 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         processed += 1
 
-        if processed % 100 == 0:
-
+        if processed % 25 == 0:
+            
             await status.edit_text(
                 "🚀 Broadcasting...\n\n"
                 f"Processed : {processed}/{total}\n"
@@ -358,7 +380,7 @@ async def forward_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         processed += 1
 
-        if processed % 100 == 0:
+        if processed % 25 == 0:
 
             await status.edit_text(
                 "🚀 Forward Broadcasting...\n\n"
@@ -385,7 +407,7 @@ async def forward_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         processed += 1
 
-        if processed % 100 == 0:
+        if processed % 25 == 0:
 
             await status.edit_text(
                 "🚀 Forward Broadcasting...\n\n"
