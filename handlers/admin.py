@@ -40,7 +40,12 @@ from telegram.error import (
 )
 
 from config import ADMIN_IDS
-from database import get_all_users, get_all_groups
+from database.mongo import (
+    get_all_users,
+    get_all_groups,
+    remove_user,
+    remove_group,
+)
 
 
 # ============================================================
