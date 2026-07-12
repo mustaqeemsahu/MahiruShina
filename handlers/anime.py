@@ -14,23 +14,46 @@ from utils.filters import force_sub, check_bot_status
 # ==============================
 
 async def add_anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     if update.effective_user.id not in ADMIN_IDS:
         return
 
     text = update.message.text.replace("/add", "", 1).strip()
-    parts = [p.strip() for p in text.split("|") if p.strip()]
 
-    if len(parts) != 4:
+    parts = [p.strip() for p in text.split("|")]
+
+    if len(parts) != 5:
         return await update.message.reply_text(
-            "❌ Format:\n/add Anime Name | keyword1, keyword2 | STICKER_ID | LINK"
+            "❌ Format:\n\n"
+            "/add Anime Name | keyword1, keyword2 | STICKER_ID | HINDI_LINK_OR_- | ENGLISH_LINK_OR_-"
         )
 
-    name, keywords, sticker, link = parts
-    keys = [k.strip().lower() for k in keywords.split(",")]
+    name, keywords, sticker, hindi_link, english_link = parts
 
-    await add_anime_db(name, keys, sticker, link)
-    await update.message.reply_text(f"✅ Anime Added: {name}")
+    keys = [
+        k.strip().lower()
+        for k in keywords.split(",")
+        if k.strip()
+    ]
 
+    anime_data = {
+        "name": name,
+        "keys": keys,
+        "sticker": sticker,
+    }
+
+    if hindi_link != "-":
+        anime_data["hindi_link"] = hindi_link
+
+    if english_link != "-":
+        anime_data["english_link"] = english_link
+
+    await add_anime_db(**anime_data)
+
+    await update.message.reply_text(
+        f"✅ Anime Added Successfully\n\n"
+        f"🎬 {name}"
+    )
 
 # ==============================
 # DELETE ANIME
