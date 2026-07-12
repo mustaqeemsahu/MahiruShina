@@ -8,7 +8,6 @@ from telegram.ext import ContextTypes
 from config import ADMIN_IDS, FORCE_CHANNEL
 from database.mongo import add_anime_db, delete_anime_db, get_all_anime
 from utils.filters import force_sub, check_bot_status
-
 # ==============================
 # ADD ANIME
 # ==============================
@@ -24,8 +23,13 @@ async def add_anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if len(parts) != 5:
         return await update.message.reply_text(
-            "❌ Format:\n\n"
-            "/add Anime Name | keyword1, keyword2 | STICKER_ID | HINDI_LINK_OR_- | ENGLISH_LINK_OR_-"
+            "❌ <b>Format:</b>\n\n"
+            "<code>/add Anime Name | keyword1, keyword2 | STICKER_ID | HINDI_LINK_OR_- | ENGLISH_LINK_OR_-</code>\n\n"
+            "<b>Examples:</b>\n\n"
+            "<code>/add Solo Leveling | solo leveling, sl | STICKER_ID | https://t.me/hindi | https://t.me/english</code>\n\n"
+            "<code>/add Naruto | naruto | STICKER_ID | https://t.me/hindi | -</code>\n\n"
+            "<code>/add One Piece | one piece | STICKER_ID | - | https://t.me/english</code>",
+            parse_mode="HTML"
         )
 
     name, keywords, sticker, hindi_link, english_link = parts
@@ -36,23 +40,32 @@ async def add_anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
         if k.strip()
     ]
 
-    anime_data = {
-        "name": name,
-        "keys": keys,
-        "sticker": sticker,
-    }
+    # Convert "-" to None
+    if hindi_link == "-":
+        hindi_link = None
 
-    if hindi_link != "-":
-        anime_data["hindi_link"] = hindi_link
+    if english_link == "-":
+        english_link = None
 
-    if english_link != "-":
-        anime_data["english_link"] = english_link
+    await add_anime_db(
+        name=name,
+        keys=keys,
+        sticker=sticker,
+        hindi_link=hindi_link,
+        english_link=english_link
+    )
 
-    await add_anime_db(**anime_data)
+    msg = (
+        f"✅ <b>Anime Added Successfully!</b>\n\n"
+        f"🎬 <b>Name:</b> <code>{name}</code>\n"
+        f"🔑 <b>Keywords:</b> <code>{', '.join(keys)}</code>\n"
+        f"🇮🇳 <b>Hindi:</b> {'✅ Added' if hindi_link else '❌ Not Available'}\n"
+        f"🇺🇸 <b>English:</b> {'✅ Added' if english_link else '❌ Not Available'}"
+    )
 
     await update.message.reply_text(
-        f"✅ Anime Added Successfully\n\n"
-        f"🎬 {name}"
+        msg,
+        parse_mode="HTML"
     )
 
 # ==============================
