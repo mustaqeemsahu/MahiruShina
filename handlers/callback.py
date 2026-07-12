@@ -2,7 +2,11 @@
 # CALLBACK HANDLER
 # ==============================
 
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import (
+    Update,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup
+)
 from telegram.ext import ContextTypes
 
 from database.mongo import get_all_anime
@@ -11,7 +15,58 @@ from config import ANIME_PER_PAGE, FORCE_CHANNEL
 
 
 # ==============================
-# BUTTON CLICK
+# BUTTON BUILDER
+# ==============================
+
+def build_buttons(anime):
+
+    keyboard = []
+
+    hindi = anime.get("hindi_link")
+    english = anime.get("english_link")
+    old_link = anime.get("link")  # Backward compatibility
+
+    row = []
+
+    if hindi:
+        row.append(
+            InlineKeyboardButton(
+                "🇮🇳 Watch In Hindi",
+                url=hindi
+            )
+        )
+
+    if english:
+        row.append(
+            InlineKeyboardButton(
+                "🇺🇸 Watch In English",
+                url=english
+            )
+        )
+
+    if not hindi and not english and old_link:
+        row.append(
+            InlineKeyboardButton(
+                "🎬 Watch & Download",
+                url=old_link
+            )
+        )
+
+    if row:
+        keyboard.append(row)
+
+    keyboard.append([
+        InlineKeyboardButton(
+            "📢 Join Main Channel",
+            url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}"
+        )
+    ])
+
+    return InlineKeyboardMarkup(keyboard)
+
+
+# ==============================
+# CALLBACK HANDLER
 # ==============================
 
 async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -26,53 +81,94 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # ==============================
     # ANIME BUTTON
     # ==============================
+
     if data.startswith("anime_"):
 
         name = data.replace("anime_", "").lower()
 
-        for a in animes:
-            if a["name"].lower() == name:
+        for anime in animes:
 
-                keyboard = [
-                    [InlineKeyboardButton("🎬 Watch & Download", url=a["link"])],
-                    [InlineKeyboardButton("📢 Join Channel", url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}")]
-                ]
+            if anime["name"].lower() == name:
 
-                await query.message.reply_sticker(
-                    sticker=a["sticker"],
-                    reply_markup=InlineKeyboardMarkup(keyboard)
-                )
-                break
+                try:
+
+                    await query.message.reply_sticker(
+                        sticker=anime["sticker"],
+                        reply_markup=build_buttons(anime)
+                    )
+
+                except Exception:
+
+                    await query.message.reply_text(
+                        anime["name"],
+                        reply_markup=build_buttons(anime)
+                    )
+
+                return
 
     # ==============================
     # PAGINATION
     # ==============================
+
     elif data.startswith("alist_"):
 
         page = int(data.split("_")[1])
 
-        animes = sorted(animes, key=lambda x: x["name"].lower())
+        animes = sorted(
+            animes,
+            key=lambda x: x["name"].lower()
+        )
 
-        page_data, page, total_pages = build_page(animes, page)
+        page_data, page, total_pages = build_page(
+            animes,
+            page
+        )
 
-        text = f"<b>📜 Anime List</b>\nPage {page}/{total_pages}\n\n"
+        text = (
+            f"<b>📜 Anime List</b>\n"
+            f"Page {page}/{total_pages}\n\n"
+        )
 
         start_no = (page - 1) * ANIME_PER_PAGE
 
-        for i, a in enumerate(page_data, start=start_no + 1):
-            text += f"{i}. <a href='{a['link']}'>{a['name']}</a>\n"
+        for i, anime in enumerate(
+            page_data,
+            start=start_no + 1
+        ):
 
-        prev_p = page - 1 if page > 1 else 1
-        next_p = page + 1 if page < total_pages else total_pages
+            # Prefer Hindi > English > Old Link
+            link = (
+                anime.get("hindi_link")
+                or anime.get("english_link")
+                or anime.get("link", "#")
+            )
+
+            text += (
+                f"{i}. "
+                f"<a href='{link}'>{anime['name']}</a>\n"
+            )
+
+        prev_page = page - 1 if page > 1 else 1
+        next_page = (
+            page + 1
+            if page < total_pages
+            else total_pages
+        )
 
         keyboard = [[
-            InlineKeyboardButton("⬅️ Prev", callback_data=f"alist_{prev_p}"),
-            InlineKeyboardButton("➡️ Next", callback_data=f"alist_{next_p}")
+            InlineKeyboardButton(
+                "⬅️ Prev",
+                callback_data=f"alist_{prev_page}"
+            ),
+            InlineKeyboardButton(
+                "➡️ Next",
+                callback_data=f"alist_{next_page}"
+            )
         ]]
 
         await query.message.edit_text(
             text,
-            reply_markup=InlineKeyboardMarkup(keyboard),
             parse_mode="HTML",
-            disable_web_page_preview=True
-        )
+            disable_web_page_preview=True,
+            reply_markup=InlineKeyboardMarkup(keyboard)
+                    )
