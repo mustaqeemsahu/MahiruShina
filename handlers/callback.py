@@ -129,6 +129,8 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"Page {page}/{total_pages}\n\n"
         )
 
+        keyboard = []
+
         start_no = (page - 1) * ANIME_PER_PAGE
 
         for i, anime in enumerate(
@@ -136,26 +138,54 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
             start=start_no + 1
         ):
 
-            # Prefer Hindi > English > Old Link
-            link = (
-                anime.get("hindi_link")
-                or anime.get("english_link")
-                or anime.get("link", "#")
-            )
+            hindi = anime.get("hindi_link")
+            english = anime.get("english_link")
+            old = anime.get("link")
 
-            text += (
-                f"{i}. "
-                f"<a href='{link}'>{anime['name']}</a>\n"
-            )
+            # BOTH LANGUAGES
+            if hindi and english:
+
+                text += f"{i}. {anime['name']} 👇\n"
+
+                keyboard.append([
+                    InlineKeyboardButton(
+                        anime["name"],
+                        callback_data=f"anime_{anime['name']}"
+                    )
+                ])
+
+            # HINDI ONLY
+            elif hindi:
+
+                text += (
+                    f"{i}. "
+                    f"<a href='{hindi}'>{anime['name']}</a>\n"
+                )
+
+            # ENGLISH ONLY
+            elif english:
+
+                text += (
+                    f"{i}. "
+                    f"<a href='{english}'>{anime['name']}</a>\n"
+                )
+
+            # OLD DATABASE
+            elif old:
+
+                text += (
+                    f"{i}. "
+                    f"<a href='{old}'>{anime['name']}</a>\n"
+                )
+
+            else:
+
+                text += f"{i}. {anime['name']}\n"
 
         prev_page = page - 1 if page > 1 else 1
-        next_page = (
-            page + 1
-            if page < total_pages
-            else total_pages
-        )
+        next_page = page + 1 if page < total_pages else total_pages
 
-        keyboard = [[
+        keyboard.append([
             InlineKeyboardButton(
                 "⬅️ Prev",
                 callback_data=f"alist_{prev_page}"
@@ -164,11 +194,11 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 "➡️ Next",
                 callback_data=f"alist_{next_page}"
             )
-        ]]
+        ])
 
         await query.message.edit_text(
-            text,
+            text=text,
             parse_mode="HTML",
             disable_web_page_preview=True,
             reply_markup=InlineKeyboardMarkup(keyboard)
-                    )
+    )
