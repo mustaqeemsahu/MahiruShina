@@ -81,19 +81,37 @@ async def get_all_anime():
     return ANIME_CACHE
 
 
-async def add_anime_db(name, keys, sticker, link):
+async def add_anime_db(
+    name,
+    keys,
+    sticker,
+    hindi_link=None,
+    english_link=None
+):
+    data = {
+        "name": name,
+        "keys": keys,
+        "sticker": sticker
+    }
+
+    # Save only if provided
+    if hindi_link:
+        data["hindi_link"] = hindi_link
+
+    if english_link:
+        data["english_link"] = english_link
+
+    # Backward compatibility
+    if not hindi_link and not english_link:
+        data["link"] = ""
+
     await anime_col.update_one(
         {"name": name},
-        {"$set": {
-            "name": name,
-            "keys": keys,
-            "sticker": sticker,
-            "link": link
-        }},
+        {"$set": data},
         upsert=True
     )
 
-    # 🔥 Refresh cache instantly
+    # Refresh cache
     await load_anime_cache()
 
 
