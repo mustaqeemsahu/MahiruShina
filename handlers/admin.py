@@ -1,34 +1,3 @@
-# ==============================
-# ADMIN + BROADCAST SYSTEM
-# ==============================
-
-from telegram import Update
-from telegram.ext import ContextTypes
-
-from config import ADMIN_IDS
-from database.mongo import get_all_users, get_all_groups, users_col, groups_col
-
-
-# ==============================
-# STATS
-# ==============================
-
-async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id not in ADMIN_IDS:
-        return
-
-    users = await get_all_users()
-    groups = await get_all_groups()
-
-    await update.message.reply_text(
-        f"📊 Stats\n\n👤 Users: {len(users)}\n👥 Groups: {len(groups)}"
-    )
-
-
-# ==============================
-# BROADCAST (COPY MESSAGE)
-# ==============================
-
 import asyncio
 
 from telegram import Update
@@ -43,23 +12,39 @@ from config import ADMIN_IDS
 from database.mongo import (
     get_all_users,
     get_all_groups,
+    users_col,
+    groups_col,
     remove_user,
     remove_group,
 )
 
+# ============================================================
+# STATS
+# ============================================================
+
+async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id not in ADMIN_IDS:
+        return
+
+    users = await get_all_users()
+    groups = await get_all_groups()
+
+    await update.message.reply_text(
+        f"📊 Stats\n\n"
+        f"👤 Users : {len(users)}\n"
+        f"👥 Groups : {len(groups)}"
+    )
+
 
 # ============================================================
-# Helper Functions
+# Helper Function - Copy Message
 # ============================================================
 
 async def _copy_message(context, msg, chat_id, pin=False):
-
     try:
-
         sent = await msg.copy(chat_id=chat_id)
 
         if pin:
-
             try:
                 await context.bot.pin_chat_message(
                     chat_id=chat_id,
@@ -72,15 +57,12 @@ async def _copy_message(context, msg, chat_id, pin=False):
         return True
 
     except RetryAfter as e:
-
         await asyncio.sleep(e.retry_after)
 
         try:
-
             sent = await msg.copy(chat_id=chat_id)
 
             if pin:
-
                 try:
                     await context.bot.pin_chat_message(
                         chat_id=chat_id,
@@ -92,10 +74,24 @@ async def _copy_message(context, msg, chat_id, pin=False):
 
             return True
 
+        except Forbidden:
+            if str(chat_id).startswith("-100"):
+                await remove_group(chat_id)
+            else:
+                await remove_user(chat_id)
+            return False
+
+        except BadRequest:
+            if str(chat_id).startswith("-100"):
+                await remove_group(chat_id)
+            else:
+                await remove_user(chat_id)
+            return False
+
         except Exception:
             return False
 
-        except Forbidden:
+    except Forbidden:
         if str(chat_id).startswith("-100"):
             await remove_group(chat_id)
         else:
@@ -112,10 +108,12 @@ async def _copy_message(context, msg, chat_id, pin=False):
     except Exception:
         return False
 
+# ============================================================
+# Helper Function - Forward Message
+# ============================================================
+
 async def _forward_message(context, msg, chat_id, pin=False):
-
     try:
-
         sent = await context.bot.forward_message(
             chat_id=chat_id,
             from_chat_id=msg.chat_id,
@@ -123,7 +121,6 @@ async def _forward_message(context, msg, chat_id, pin=False):
         )
 
         if pin:
-
             try:
                 await context.bot.pin_chat_message(
                     chat_id=chat_id,
@@ -136,11 +133,9 @@ async def _forward_message(context, msg, chat_id, pin=False):
         return True
 
     except RetryAfter as e:
-
         await asyncio.sleep(e.retry_after)
 
         try:
-
             sent = await context.bot.forward_message(
                 chat_id=chat_id,
                 from_chat_id=msg.chat_id,
@@ -148,7 +143,6 @@ async def _forward_message(context, msg, chat_id, pin=False):
             )
 
             if pin:
-
                 try:
                     await context.bot.pin_chat_message(
                         chat_id=chat_id,
@@ -160,10 +154,24 @@ async def _forward_message(context, msg, chat_id, pin=False):
 
             return True
 
+        except Forbidden:
+            if str(chat_id).startswith("-100"):
+                await remove_group(chat_id)
+            else:
+                await remove_user(chat_id)
+            return False
+
+        except BadRequest:
+            if str(chat_id).startswith("-100"):
+                await remove_group(chat_id)
+            else:
+                await remove_user(chat_id)
+            return False
+
         except Exception:
             return False
 
-        except Forbidden:
+    except Forbidden:
         if str(chat_id).startswith("-100"):
             await remove_group(chat_id)
         else:
@@ -180,13 +188,21 @@ async def _forward_message(context, msg, chat_id, pin=False):
     except Exception:
         return False
 
-async def _send_report(update, context,
-                       users_total,
-                       users_success,
-                       users_failed,
-                       groups_total,
-                       groups_success,
-                       groups_failed):
+
+# ============================================================
+# Broadcast Report
+# ============================================================
+
+async def _send_report(
+    update,
+    context,
+    users_total,
+    users_success,
+    users_failed,
+    groups_total,
+    groups_success,
+    groups_failed,
+):
 
     report = (
         "✅ <b>Broadcast Completed</b>\n\n"
@@ -216,10 +232,10 @@ async def _send_report(update, context,
     except Exception:
         pass
 
-    return report 
+    return report
 
 # ============================================================
-# /bc  (Copy Broadcast)
+# /bc (Copy Broadcast)
 # ============================================================
 
 async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -262,7 +278,7 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context=context,
             msg=msg,
             chat_id=user_id,
-            pin=False,      # Telegram bots cannot pin in user DMs
+            pin=False,      # Bots can't pin in private chats
         )
 
         if ok:
@@ -273,13 +289,15 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         processed += 1
 
         if processed % 25 == 0:
-            
-            await status.edit_text(
-                "🚀 Broadcasting...\n\n"
-                f"Processed : {processed}/{total}\n"
-                f"Users : {users_success}/{users_total}\n"
-                f"Groups : {groups_success}/{groups_total}"
-            )
+            try:
+                await status.edit_text(
+                    "🚀 Broadcasting...\n\n"
+                    f"Processed : {processed}/{total}\n"
+                    f"Users : {users_success}/{users_total}\n"
+                    f"Groups : {groups_success}/{groups_total}"
+                )
+            except Exception:
+                pass
 
     # ---------------- GROUPS ---------------- #
 
@@ -300,29 +318,34 @@ async def broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         processed += 1
 
         if processed % 25 == 0:
-            
-            await status.edit_text(
-                "🚀 Broadcasting...\n\n"
-                f"Processed : {processed}/{total}\n"
-                f"Users : {users_success}/{users_total}\n"
-                f"Groups : {groups_success}/{groups_total}"
-            )
+            try:
+                await status.edit_text(
+                    "🚀 Broadcasting...\n\n"
+                    f"Processed : {processed}/{total}\n"
+                    f"Users : {users_success}/{users_total}\n"
+                    f"Groups : {groups_success}/{groups_total}"
+                )
+            except Exception:
+                pass
 
     report = await _send_report(
-        update,
-        context,
-        users_total,
-        users_success,
-        users_failed,
-        groups_total,
-        groups_success,
-        groups_failed,
+        update=update,
+        context=context,
+        users_total=users_total,
+        users_success=users_success,
+        users_failed=users_failed,
+        groups_total=groups_total,
+        groups_success=groups_success,
+        groups_failed=groups_failed,
     )
 
-    await status.edit_text(
-        report,
-        parse_mode="HTML",
-    )
+    try:
+        await status.edit_text(
+            report,
+            parse_mode="HTML",
+        )
+    except Exception:
+        pass
 
 # ============================================================
 # /fbc (Forward Broadcast)
@@ -368,7 +391,7 @@ async def forward_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context=context,
             msg=msg,
             chat_id=user_id,
-            pin=False
+            pin=False,
         )
 
         if ok:
@@ -379,13 +402,15 @@ async def forward_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         processed += 1
 
         if processed % 25 == 0:
-
-            await status.edit_text(
-                "🚀 Forward Broadcasting...\n\n"
-                f"Processed : {processed}/{total}\n"
-                f"Users : {users_success}/{users_total}\n"
-                f"Groups : {groups_success}/{groups_total}"
-            )
+            try:
+                await status.edit_text(
+                    "🚀 Forward Broadcasting...\n\n"
+                    f"Processed : {processed}/{total}\n"
+                    f"Users : {users_success}/{users_total}\n"
+                    f"Groups : {groups_success}/{groups_total}"
+                )
+            except Exception:
+                pass
 
     # ---------------- GROUPS ---------------- #
 
@@ -395,7 +420,7 @@ async def forward_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
             context=context,
             msg=msg,
             chat_id=group_id,
-            pin=True
+            pin=True,
         )
 
         if ok:
@@ -406,33 +431,38 @@ async def forward_broadcast(update: Update, context: ContextTypes.DEFAULT_TYPE):
         processed += 1
 
         if processed % 25 == 0:
-
-            await status.edit_text(
-                "🚀 Forward Broadcasting...\n\n"
-                f"Processed : {processed}/{total}\n"
-                f"Users : {users_success}/{users_total}\n"
-                f"Groups : {groups_success}/{groups_total}"
-            )
+            try:
+                await status.edit_text(
+                    "🚀 Forward Broadcasting...\n\n"
+                    f"Processed : {processed}/{total}\n"
+                    f"Users : {users_success}/{users_total}\n"
+                    f"Groups : {groups_success}/{groups_total}"
+                )
+            except Exception:
+                pass
 
     report = await _send_report(
-        update,
-        context,
-        users_total,
-        users_success,
-        users_failed,
-        groups_total,
-        groups_success,
-        groups_failed,
+        update=update,
+        context=context,
+        users_total=users_total,
+        users_success=users_success,
+        users_failed=users_failed,
+        groups_total=groups_total,
+        groups_success=groups_success,
+        groups_failed=groups_failed,
     )
 
-    await status.edit_text(
-        report,
-        parse_mode="HTML",
-    )
+    try:
+        await status.edit_text(
+            report,
+            parse_mode="HTML",
+        )
+    except Exception:
+        pass
 
-# ==============================
+# ============================================================
 # BULK ADD USERS / GROUPS
-# ==============================
+# ============================================================
 
 async def bulk_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
@@ -443,35 +473,42 @@ async def bulk_add(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return await update.message.reply_text(
             "❌ Usage:\n"
             "/bulkadd user 12345 67890\n"
-            "/bulkadd group -100123 -100456"
+            "/bulkadd group -1001234567890 -1009876543210"
         )
 
     mode = context.args[0].lower()
     ids = context.args[1:]
 
     if not ids:
-        return await update.message.reply_text("❌ No IDs given")
+        return await update.message.reply_text("❌ No IDs provided.")
 
     success = 0
     failed = 0
 
-    for i in ids:
+    for chat in ids:
         try:
-            _id = int(i)
+            chat_id = int(chat)
 
             if mode == "user":
-                if not await users_col.find_one({"_id": _id}):
-                    await users_col.insert_one({"_id": _id})
+                if not await users_col.find_one({"_id": chat_id}):
+                    await users_col.insert_one({"_id": chat_id})
+
             elif mode == "group":
-                if not await groups_col.find_one({"_id": _id}):
-                    await groups_col.insert_one({"_id": _id})
+                if not await groups_col.find_one({"_id": chat_id}):
+                    await groups_col.insert_one({"_id": chat_id})
+
             else:
-                return await update.message.reply_text("❌ Use 'user' or 'group'")
+                return await update.message.reply_text(
+                    "❌ Mode must be either 'user' or 'group'."
+                )
 
             success += 1
-        except:
+
+        except Exception:
             failed += 1
 
     await update.message.reply_text(
-        f"✅ Bulk Add Done\n\n✔ Success: {success}\n❌ Failed: {failed}"
+        "✅ Bulk Add Completed\n\n"
+        f"✔ Successfully Added : {success}\n"
+        f"❌ Failed : {failed}"
     )
