@@ -96,16 +96,14 @@ async def _copy_message(context, msg, chat_id, pin=False):
             return False
 
     except Forbidden:
-        if
-    str(chat_id).startswith("-100"):
+    if str(chat_id).startswith("-100"):
         await remove_group(chat_id)
     else:
         await remove_user(chat_id)
     return False
 
-    except BadRequest:
-        if
-    str(chat_id).startswith("-100"):
+except BadRequest:
+    if str(chat_id).startswith("-100"):
         await remove_group(chat_id)
     else:
         await remove_user(chat_id)
@@ -167,16 +165,14 @@ async def _forward_message(context, msg, chat_id, pin=False):
             return False
 
     except Forbidden:
-        if
-    str(chat_id).startswith("-100"):
+    if str(chat_id).startswith("-100"):
         await remove_group(chat_id)
     else:
         await remove_user(chat_id)
     return False
 
-    except BadRequest:
-        if
-    str(chat_id).startswith("-100"):
+except BadRequest:
+    if str(chat_id).startswith("-100"):
         await remove_group(chat_id)
     else:
         await remove_user(chat_id)
