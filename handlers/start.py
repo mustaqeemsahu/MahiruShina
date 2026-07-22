@@ -46,12 +46,12 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # 🔗 Buttons
     keyboard = InlineKeyboardMarkup([
         [
-            InlineKeyboardButton("📢 Updates Channel", url="https://t.me/Sahu_Bots"),
-            InlineKeyboardButton("💬 Support Chat", url="https://t.me/Anime_Search_Zone")
+            InlineKeyboardButton("📢 𝗨𝗽𝗱𝗮𝘁𝗲𝘀", url="https://t.me/Sahu_Bots"),
+            InlineKeyboardButton("💬 𝗦𝘂𝗽𝗽𝗼𝗿𝘁", url="https://t.me/Anime_Search_Zone")
         ],
         [
             InlineKeyboardButton(
-                "➕ Add Me To Your Group",
+                "➕ 𝗔𝗱𝗱 𝗠𝗲 𝗧𝗼 𝗬𝗼𝘂𝗿 𝗚𝗿𝗼𝘂𝗽",
                 url=f"https://t.me/{context.bot.username}?startgroup=true"
             )
         ]
@@ -59,15 +59,11 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # 📝 Message
     text = (
-        f"👋 Hey {user.first_name}\n\n"
-        "🎌 <b>Welcome to Mahiru Anime Provider</b>\n\n"
-        "I help you find anime instantly in groups & private chats.\n\n"
-        "<b>📌 Commands</b>\n"
-        "• <code>/anime [name]</code> – Get anime instantly\n"
-        "• <code>/search Naruto</code> – Partial search\n"
-        "• <code>/animelist</code> – View available anime list\n\n"
-        "✨ Invite your friends and enjoy together 🎟\n"
-        "📢 Our Network: @Anime_Stream_Zone"
+        f"👋 ʜᴇʏ {user.first_name}\n\n"
+        "🎌 <b>ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴀɴɪᴍᴇ ꜱᴇᴀʀᴄʜᴇʀ ʙᴏᴛ</b>\n\n"
+        "<b><blockquote>ɪ ᴄᴀɴ ʜᴇʟᴩ ʏᴏᴜ ᴛᴏ ꜰɪɴᴅ ʏᴏᴜʀ ᴀɴɪᴍᴇ. ᴊᴜꜱᴛ ᴛʏᴩᴇ ᴀɴɪᴍᴇ ɴᴀᴍᴇ ᴡʜɪᴄʜ ʏᴏᴜ ᴡᴀɴᴛ ᴛᴏ ᴡᴀᴛᴄʜ</b></blockquote>\n\n"
+        "<b>ᴀᴅᴅ ᴍᴇ ɪɴ ʏᴏᴜʀ ɢʀᴏᴜᴩ ᴀɴᴅ ᴍᴀᴋᴇ ᴛʜᴀᴛ ꜱɪᴍᴩʟᴇ ɢʀᴏᴜᴩ ɪɴᴛᴏ ᴀɴɪᴍᴇ ꜰɪɴᴅɪɴɢ ɢʀᴏᴜᴩ ʙʏ ᴊᴜꜱᴛ ᴀᴅᴅɪɴɢ ᴍᴇ ᴛʜᴇʀᴇ. ɪ ᴡɪʟʟ ᴩʀᴏᴠɪᴅᴇ ᴀɴɪᴍᴇ ɪɴ ʏᴏᴜʀ ɢʀᴏᴜᴩ ᴀʟꜱᴏ. ꜰʀᴏᴍ ᴛʜɪꜱ ʏᴏᴜʀ ᴍᴇᴍʙᴇʀꜱ ᴄᴀɴ ᴀʟꜱᴏ ᴇɴᴊᴏʏ ᴀɴɪᴍᴇ ᴛʜᴇʀᴇ. </b>\n"
+        "📢 ᴍᴀɪɴ ᴄʜᴀɴɴᴇʟ :- @Anime_Stream_Zone"
     )
 
     # 📤 Send Message Safely
