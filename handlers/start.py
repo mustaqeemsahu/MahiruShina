@@ -19,6 +19,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     message = update.effective_message
     user = update.effective_user
 
+    chat_type = "👤 Private" if update.effective_chat.type == "private" else "👥 Group"
+
     if not message or not user:
         return
 
@@ -35,6 +37,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(
             REPORT_GROUP_ID,
             f"🚀 <b>Bot Started</b>\n\n"
+            f"📍 Type: {chat_type}\n"
             f"👤 User: {user.first_name}\n"
             f"🆔 ID: <code>{user_id}</code>\n"
             f"🕒 Time: {now()}",
@@ -61,7 +64,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = (
         f"👋 ʜᴇʏ {user.first_name}\n\n"
         "🎌 <b>ᴡᴇʟᴄᴏᴍᴇ ᴛᴏ ᴀɴɪᴍᴇ ꜱᴇᴀʀᴄʜᴇʀ ʙᴏᴛ</b>\n\n"
-        "<b><blockquote>ɪ ᴄᴀɴ ʜᴇʟᴩ ʏᴏᴜ ᴛᴏ ꜰɪɴᴅ ʏᴏᴜʀ ᴀɴɪᴍᴇ. ᴊᴜꜱᴛ ᴛʏᴩᴇ ᴀɴɪᴍᴇ ɴᴀᴍᴇ ᴡʜɪᴄʜ ʏᴏᴜ ᴡᴀɴᴛ ᴛᴏ ᴡᴀᴛᴄʜ</b></blockquote>\n\n"
+        "<b><blockquote>ɪ ᴄᴀɴ ʜᴇʟᴩ ʏᴏᴜ ᴛᴏ ꜰɪɴᴅ ʏᴏᴜʀ ᴀɴɪᴍᴇ. ᴊᴜꜱᴛ ᴛʏᴩᴇ ᴀɴɪᴍᴇ ɴᴀᴍᴇ ᴡʜɪᴄʜ ʏᴏᴜ ᴡᴀɴᴛ ᴛᴏ ᴡᴀᴛᴄʜ</blockquote></b>\n\n"
         "<b>ᴀᴅᴅ ᴍᴇ ɪɴ ʏᴏᴜʀ ɢʀᴏᴜᴩ ᴀɴᴅ ᴍᴀᴋᴇ ᴛʜᴀᴛ ꜱɪᴍᴩʟᴇ ɢʀᴏᴜᴩ ɪɴᴛᴏ ᴀɴɪᴍᴇ ꜰɪɴᴅɪɴɢ ɢʀᴏᴜᴩ ʙʏ ᴊᴜꜱᴛ ᴀᴅᴅɪɴɢ ᴍᴇ ᴛʜᴇʀᴇ. ɪ ᴡɪʟʟ ᴩʀᴏᴠɪᴅᴇ ᴀɴɪᴍᴇ ɪɴ ʏᴏᴜʀ ɢʀᴏᴜᴩ ᴀʟꜱᴏ. ꜰʀᴏᴍ ᴛʜɪꜱ ʏᴏᴜʀ ᴍᴇᴍʙᴇʀꜱ ᴄᴀɴ ᴀʟꜱᴏ ᴇɴᴊᴏʏ ᴀɴɪᴍᴇ ᴛʜᴇʀᴇ. </b>\n"
         "📢 ᴍᴀɪɴ ᴄʜᴀɴɴᴇʟ :- @Anime_Stream_Zone"
     )
