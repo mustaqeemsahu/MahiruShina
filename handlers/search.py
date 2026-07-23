@@ -62,40 +62,42 @@ def build_buttons(anime):
     # Backward compatibility
     old_link = anime.get("link")
 
-    row = []
-
-    if hindi:
-        row.append(
+    # Hindi Button
+    if hindi and hindi != "-":
+        keyboard.append([
             InlineKeyboardButton(
                 "🇮🇳 Watch In Hindi",
                 url=hindi
             )
-        )
+        ])
 
-    if english:
-        row.append(
+    # English Button
+    if english and english != "-":
+        keyboard.append([
             InlineKeyboardButton(
                 "🇺🇸 Watch In English",
                 url=english
             )
-        )
+        ])
 
-    # Old database support
-    if not hindi and not english and old_link:
-        row.append(
+    # Old Database Support
+    if (
+        (not hindi or hindi == "-")
+        and (not english or english == "-")
+        and old_link
+    ):
+        keyboard.append([
             InlineKeyboardButton(
                 "🎬 Watch & Download",
                 url=old_link
             )
-        )
+        ])
 
-    if row:
-        keyboard.append(row)
-
+    # Join Channel
     keyboard.append([
         InlineKeyboardButton(
             "📢 Join Main Channel",
-            url=f"https://t.me/{FORCE_CHANNEL.replace('@','')}"
+            url=f"https://t.me/{FORCE_CHANNEL.replace('@', '')}"
         )
     ])
 
