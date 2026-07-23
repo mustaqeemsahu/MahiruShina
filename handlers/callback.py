@@ -109,7 +109,11 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 return
 
-elif data == "ignore":
+    # ==============================
+    # IGNORE PAGE BUTTON
+    # ==============================
+
+    elif data == "ignore":
     await query.answer(
         "Please Use Prev/Next Butn Only",
         show_alert=False
