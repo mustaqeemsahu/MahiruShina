@@ -119,11 +119,11 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         show_alert=False
     )
 
-# ==============================
-# PAGINATION
-# ==============================
+    # ==============================
+    # PAGINATION
+    # ==============================
 
-elif data.startswith("alist_"):
+    elif data.startswith("alist_"):
 
     page = int(data.split("_")[1])
 
@@ -198,4 +198,4 @@ elif data.startswith("alist_"):
         parse_mode="HTML",
         disable_web_page_preview=True,
         reply_markup=keyboard
-)
+    )
