@@ -106,99 +106,83 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
                 return
 
-    # ==============================
-    # PAGINATION
-    # ==============================
+# ==============================
+# PAGINATION
+# ==============================
 
-    elif data.startswith("alist_"):
+elif data.startswith("alist_"):
 
-        page = int(data.split("_")[1])
+    page = int(data.split("_")[1])
 
-        animes = sorted(
-            animes,
-            key=lambda x: x["name"].lower()
-        )
+    animes = sorted(
+        animes,
+        key=lambda x: x["name"].lower()
+    )
 
-        page_data, page, total_pages = build_page(
-            animes,
-            page
-        )
+    page_data, page, total_pages = build_page(
+        animes,
+        page
+    )
 
-        text = (
-            f"<b>📜 Anime List</b>\n"
-            f"Page {page}/{total_pages}\n\n"
-        )
+    text = (
+        f"<b>📜 Anime List</b>\n"
+        f"📄 Page {page}/{total_pages}\n\n"
+    )
 
-        keyboard = []
+    start_no = (page - 1) * ANIME_PER_PAGE
 
-        start_no = (page - 1) * ANIME_PER_PAGE
+    for i, anime in enumerate(
+        page_data,
+        start=start_no + 1
+    ):
 
-        for i, anime in enumerate(
-            page_data,
-            start=start_no + 1
-        ):
+        hindi = anime.get("hindi_link", "-")
+        english = anime.get("english_link", "-")
 
-            hindi = anime.get("hindi_link")
-            english = anime.get("english_link")
-            old = anime.get("link")
+        text += f"<b>{i}) {anime['name']}</b> ➪ "
 
-            # BOTH LANGUAGES
-            if hindi and english:
+        links = []
 
-                text += f"{i}. {anime['name']} 👇\n"
+        if hindi and hindi != "-":
+            links.append(
+                f"<a href='{hindi}'>🇮🇳 Hindi</a>"
+            )
 
-                keyboard.append([
-                    InlineKeyboardButton(
-                        anime["name"],
-                        callback_data=f"anime_{anime['name']}"
-                    )
-                ])
+        if english and english != "-":
+            links.append(
+                f"<a href='{english}'>🇺🇸 English</a>"
+            )
 
-            # HINDI ONLY
-            elif hindi:
+        if links:
+            text += " | ".join(links)
+        else:
+            text += "❌ No Link"
 
-                text += (
-                    f"{i}. "
-                    f"<a href='{hindi}'>{anime['name']}</a>\n"
-                )
+        text += "\n"
 
-            # ENGLISH ONLY
-            elif english:
+    prev_page = page - 1 if page > 1 else 1
+    next_page = page + 1 if page < total_pages else total_pages
 
-                text += (
-                    f"{i}. "
-                    f"<a href='{english}'>{anime['name']}</a>\n"
-                )
-
-            # OLD DATABASE
-            elif old:
-
-                text += (
-                    f"{i}. "
-                    f"<a href='{old}'>{anime['name']}</a>\n"
-                )
-
-            else:
-
-                text += f"{i}. {anime['name']}\n"
-
-        prev_page = page - 1 if page > 1 else 1
-        next_page = page + 1 if page < total_pages else total_pages
-
-        keyboard.append([
+    keyboard = InlineKeyboardMarkup([
+        [
             InlineKeyboardButton(
                 "⬅️ Prev",
                 callback_data=f"alist_{prev_page}"
             ),
             InlineKeyboardButton(
-                "➡️ Next",
+                f"{page}/{total_pages}",
+                callback_data="ignore"
+            ),
+            InlineKeyboardButton(
+                "Next ➡️",
                 callback_data=f"alist_{next_page}"
             )
-        ])
+        ]
+    ])
 
-        await query.message.edit_text(
-            text=text,
-            parse_mode="HTML",
-            disable_web_page_preview=True,
-            reply_markup=InlineKeyboardMarkup(keyboard)
-    )
+    await query.message.edit_text(
+        text=text,
+        parse_mode="HTML",
+        disable_web_page_preview=True,
+        reply_markup=keyboard
+)
