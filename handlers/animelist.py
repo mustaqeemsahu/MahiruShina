@@ -59,75 +59,72 @@ async def animelist(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     text = (
         f"<b>📜 Anime List</b>\n"
-        f"Page {page}/{total_pages}\n\n"
+        f"📄 Page {page}/{total_pages}\n\n"
     )
-
-    keyboard = []
 
     start_no = (page - 1) * ANIME_PER_PAGE
 
-    for i, anime in enumerate(page_data, start=start_no + 1):
+    for i, anime in enumerate(
+        page_data,
+        start=start_no + 1
+    ):
 
-        hindi = anime.get("hindi_link")
-        english = anime.get("english_link")
-        old = anime.get("link")
+        hindi = anime.get("hindi_link", "-")
+        english = anime.get("english_link", "-")
+        old = anime.get("link", "-")
 
-        # BOTH LANGUAGES
-        if hindi and english:
+        text += f"<b>{i}) {anime['name']}</b> ➪ "
 
-            text += f"{i}. {anime['name']} 👇\n"
+        links = []
 
-            keyboard.append([
-                InlineKeyboardButton(
-                    anime["name"],
-                    callback_data=f"anime_{anime['name']}"
-                )
-            ])
-
-        # HINDI ONLY
-        elif hindi:
-
-            text += (
-                f"{i}. "
-                f"<a href='{hindi}'>{anime['name']}</a>\n"
+        if hindi and hindi != "-":
+            links.append(
+                f"<a href='{hindi}'>🇮🇳 Hindi</a>"
             )
 
-        # ENGLISH ONLY
-        elif english:
-
-            text += (
-                f"{i}. "
-                f"<a href='{english}'>{anime['name']}</a>\n"
+        if english and english != "-":
+            links.append(
+                f"<a href='{english}'>🇺🇸 English</a>"
             )
 
-        # OLD DATABASE
-        elif old:
-
-            text += (
-                f"{i}. "
-                f"<a href='{old}'>{anime['name']}</a>\n"
+        # Old database support
+        if old and old != "-" and not links:
+            links.append(
+                f"<a href='{old}'>🔗 Watch</a>"
             )
 
+        if links:
+            text += " | ".join(links)
         else:
+            text += "❌ No Link"
 
-            text += f"{i}. {anime['name']}\n"
+        text += "\n"
+
+    prev_page = page - 1 if page > 1 else 1
+    next_page = page + 1 if page < total_pages else total_pages
+
+    keyboard = []
 
     if total_pages > 1:
-
         keyboard.append([
             InlineKeyboardButton(
                 "⬅️ Prev",
-                callback_data="alist_1"
+                callback_data=f"alist_{prev_page}"
             ),
             InlineKeyboardButton(
-                "➡️ Next",
-                callback_data="alist_2"
+                f"{page}/{total_pages}",
+                callback_data="ignore"
+            ),
+            InlineKeyboardButton(
+                "Next ➡️",
+                callback_data=f"alist_{next_page}"
             )
         ])
 
     await update.message.reply_text(
-        text,
+        text=text,
         parse_mode="HTML",
         disable_web_page_preview=True,
-        reply_markup=InlineKeyboardMarkup(keyboard) if keyboard else None
+        reply_markup=InlineKeyboardMarkup(keyboard)
+        if keyboard else None
     )
