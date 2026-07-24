@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 from telegram import Update
 from telegram.ext import ContextTypes
@@ -9,6 +10,7 @@ from telegram.error import (
 )
 
 from config import ADMIN_IDS
+from utils.uptime import START_TIME
 from database.mongo import (
     get_all_users,
     get_all_groups,
@@ -35,6 +37,27 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"👥 Groups : {len(groups)}"
     )
 
+# ============================================================
+# Uptime Handler
+# ============================================================
+
+async def uptime(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    uptime_seconds = int(time.time() - START_TIME)
+
+    days = uptime_seconds // 86400
+    hours = (uptime_seconds % 86400) // 3600
+    minutes = (uptime_seconds % 3600) // 60
+    seconds = uptime_seconds % 60
+
+    text = (
+        "🤖 <b>Bot Uptime</b>\n\n"
+        f"🗓️ Days: <b>{days}</b>\n"
+        f"🕒 Hours: <b>{hours}</b>\n"
+        f"⏰ Minutes: <b>{minutes}</b>\n"
+        f"⌛ Seconds: <b>{seconds}</b>"
+    )
+
+    await update.message.reply_text(text, parse_mode="HTML")
 
 # ============================================================
 # Helper Function - Copy Message
