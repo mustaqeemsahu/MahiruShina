@@ -58,53 +58,53 @@ async def animelist(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
     text = (
-    "📚 <b>Our Anime Collection</b>\n\n"
-    "╭━━━━━━━━━━━━━━━━━━╮\n"
-    f"📄 <b>Page :</b> {page}/{total_pages}\n"
-    f"🎬 <b>Total :</b> {len(animes)} Anime\n"
-    "╰━━━━━━━━━━━━━━━━━━╯\n\n"
-)
+        "📚 <b>Anime Collection</b>\n\n"
+        "╭━━━━━━━━━━━━━━━━━━╮\n"
+        f"📄 <b>Page :</b> {page}/{total_pages}\n"
+        f"🎬 <b>Total :</b> {len(animes)} Anime\n"
+        "╰━━━━━━━━━━━━━━━━━━╯\n\n"
+    )
 
-start_no = (page - 1) * ANIME_PER_PAGE
+    start_no = (page - 1) * ANIME_PER_PAGE
 
-for i, anime in enumerate(
-    page_data,
-    start=start_no + 1
-):
+    for i, anime in enumerate(
+        page_data,
+        start=start_no + 1
+    ):
 
-    hindi = anime.get("hindi_link", "-")
-    english = anime.get("english_link", "-")
-    old = anime.get("link", "-")
+        hindi = anime.get("hindi_link", "-")
+        english = anime.get("english_link", "-")
+        old = anime.get("link", "-")
 
-    text += f"<b>{i}. {anime['name']}</b>\n"
-    text += "➥ "
+        text += f"<b>{i}. {anime['name']}</b>\n"
+        text += "➥ "
 
-    links = []
+        links = []
 
-    # Hindi
-    if hindi and hindi != "-":
-        links.append(
-            f"<a href='{hindi}'>🇮🇳 Hindi</a>"
-        )
+        # Hindi
+        if hindi and hindi != "-":
+            links.append(
+                f"<a href='{hindi}'>🇮🇳 Hindi</a>"
+            )
 
-    # English
-    if english and english != "-":
-        links.append(
-            f"<a href='{english}'>🇺🇸 English</a>"
-        )
+        # English
+        if english and english != "-":
+            links.append(
+                f"<a href='{english}'>🇺🇸 English</a>"
+            )
 
-    # Old Database Support
-    if old and old != "-" and not links:
-        links.append(
-            f"<a href='{old}'>🔰 Watch</a>"
-        )
+        # Old Database Support
+        if old and old != "-" and not links:
+            links.append(
+                f"<a href='{old}'>🎬 Watch</a>"
+            )
 
-    if links:
-        text += " | ".join(links)
-    else:
-        text += "❌ No Link Available"
+        if links:
+            text += " | ".join(links)
+        else:
+            text += "❌ No Link Available"
 
-    text += "\n\n"
+        text += "\n\n"
 
     prev_page = page - 1 if page > 1 else 1
     next_page = page + 1 if page < total_pages else total_pages
@@ -112,17 +112,18 @@ for i, anime in enumerate(
     keyboard = []
 
     if total_pages > 1:
+
         keyboard.append([
             InlineKeyboardButton(
-                "⬅️ Prev",
+                "⏪ Previous",
                 callback_data=f"alist_{prev_page}"
             ),
             InlineKeyboardButton(
-                f"{page}/{total_pages}",
+                f"📄 {page}/{total_pages}",
                 callback_data="ignore"
             ),
             InlineKeyboardButton(
-                "Next ➡️",
+                "Next ⏩",
                 callback_data=f"alist_{next_page}"
             )
         ])
