@@ -48,17 +48,15 @@ async def chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE)
         # WELCOME MESSAGE
         # ==============================
         text = (
-            "🎌 <b>Mahiru Anime Provider Activated!</b>\n"
-            "✨ <b>I can now provide anime instantly in this group.</b>\n\n"
+            "<b>ᴛʜᴀɴᴋꜱ ꜰᴏʀ ᴀᴅᴅɪɴɢ ᴍᴇ ʜᴇʀᴇ!!</b>\n\n"
+            "<b>ɪ ᴄᴀɴ ᴩʀᴏᴠɪᴅᴇ ᴀɴɪᴍᴇ ʜᴇʀᴇ ꜰᴏʀ ᴇᴠᴇʀʏᴏɴᴇ. ᴊᴜꜱᴛ ꜱᴇɴᴅ ᴀɴɪᴍᴇ ɴᴀᴍᴇ ɪɴ ᴛʜɪꜱ ɢʀᴏᴜᴩ ᴛʜᴀɴ ɪ ᴡɪʟ ʏᴏᴜ ᴛʜᴀᴛ ᴀɴɪᴍᴇ ʟɪɴᴋ ᴛᴏ ᴡᴀᴛᴄʜ ᴀɴᴅ ᴇɴᴊᴏʏ!!</b>\n\n"
 
-            "<b>📌 How To Use This Bot</b>\n"
-            "• <code>/anime Naruto</code> – Get anime\n"
-            "• <code>/animelist</code> – Get all Anime List\n"
-            "• <code>/help</code> – To See My All commands\n\n"
+            "<b>ʜᴏᴡ ᴛᴏ ᴜꜱᴇ ᴍᴇ ?</b>\n"
+            "• <code>/anime Naruto</code> – <b>ɢᴇᴛ ᴛʜᴀᴛ ᴀɴɪᴍᴇ</b>\n"
+            "• <code>/animelist</code> – <b>ɢᴇᴛ ʟɪꜱᴛ ᴏꜰ ᴀʟʟ ᴀɴɪᴍᴇꜱ</b>\n"
+            "• <code>/help</code> – <b>ᴛᴏ ꜱᴇᴇ ᴍʏ ᴀʟʟ ᴄᴏᴍᴍᴏɴᴀᴅꜱ</b>\n\n"
 
-            "⚡ Or just type anime name directly!\n\n"
-
-            "📢 <b>From</b>: @Anime_Stream_Zone"
+            "<b>ᴍᴀɪɴ ᴄʜᴀɴɴᴇʟ</b>: @Anime_Stream_Zone"
         )
 
         keyboard = InlineKeyboardMarkup([
@@ -97,23 +95,27 @@ async def chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE)
             except Exception as e:
                 print(f"[ERROR] Message send failed: {e}")
 
-        # ==============================
-        # LOG TO REPORT GROUP
-        # ==============================
-        try:
-            await context.bot.send_message(
-                chat_id=REPORT_GROUP_ID,
-                text=(
-                    "<b>🤖 Bot Added To Group</b>\n\n"
-                    f"👥 <b>Group:</b> {chat_title}\n"
-                    f"🆔 <code>{chat_id}</code>\n"
-                    f"👤 <b>Added By:</b> {adder.first_name if adder else 'Unknown'}\n"
-                    f"🕒 <b>Time:</b> {now()}"
-                ),
-                parse_mode="HTML"
-            )
-        except Exception as e:
-            print(f"[ERROR] Log failed: {e}")
+# ==============================
+# LOG TO REPORT GROUP
+# ==============================
+
+member_count = await context.bot.get_chat_member_count(chat_id)
+
+try:
+    await context.bot.send_message(
+        chat_id=REPORT_GROUP_ID,
+        text=(
+            "<b>🤖 Bot Added To Group</b>\n\n"
+            f"👥 <b>Group:</b> {chat_title}\n"
+            f"🆔 <code>{chat_id}</code>\n"
+            f"👥 <b>Total Members:</b> {member_count}\n"
+            f"👤 <b>Added By:</b> <a href='tg://user?id={adder.id}'>{adder.first_name}</a>\n"
+            f"🕒 <b>Time:</b> {now()}"
+        ),
+        parse_mode="HTML"
+    )
+except Exception as e:
+    print(f"[ERROR] Log failed: {e}")
 
 
 # ==============================
@@ -133,12 +135,12 @@ async def welcome_new_members(update: Update, context: ContextTypes.DEFAULT_TYPE
             continue
 
         text = (
-            f"{random.choice(WELCOME_EMOJIS)} <b>Welcome</b> "
-            f"<a href='tg://user?id={user.id}'>{user.first_name}</a> IN <b>{chat.title}</b>\n\n"
-            "Hope you will enjoy here 😊\n"
-            "Use me here for Anime Search 🔍\n"
-            "/anime [name] & /animelist\n\n"
-            "Enjoy & Share Anime With Your Friends 🎌"
+            f"{random.choice(WELCOME_EMOJIS)} <b>ᴡᴇʟᴄᴏᴍᴇ</b> "
+            f"<a href='tg://user?id={user.id}'>{user.first_name}</a> <b>ɪɴ</b> <b>{chat.title}</b>\n\n"
+            "<b>ꜱᴛᴀʏ ʜᴇʀᴇ ᴀɴᴅ ᴇɴᴊᴏʏ ᴡɪᴛʜ ᴜꜱ 💫</b>\n"
+            "<b>ʏᴏᴜ ᴄᴀɴ ᴜꜱᴇ ᴍᴇ ʜᴇʀᴇ ꜰᴏʀ ᴀɴɪᴍᴇ ꜱᴇᴀʀᴄʜ</b>\n"
+            "<code>/anime [name]</code> <b>&</b> <code>/animelist</code> <b>ᴏʀ ᴊᴜꜱᴛ ꜱᴇɴᴅ ᴅɪʀᴇᴄᴛ ᴀɴɪᴍᴇ ɴᴀᴍᴇ ᴡʜɪᴄʜ ʏᴏᴜ ᴡᴀɴᴛ</b>\n\n"
+            "<b>ᴇɴᴊᴏʏ ᴀɴᴅ ꜱʜᴀʀᴇ ᴀɴɪᴍᴇ ᴡɪᴛʜ ʏᴏᴜʀ ꜰʀɪᴇɴᴅꜱ.</b>"
         )
 
         try:
