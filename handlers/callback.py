@@ -9,9 +9,104 @@ from telegram import (
 )
 from telegram.ext import ContextTypes
 
-from database.mongo import get_all_anime
+from database.mongo import get_all_anime, get_all_groups, remove_group, total_groups
 from handlers.animelist import build_page
 from config import ANIME_PER_PAGE, FORCE_CHANNEL
+
+
+# ===========================================
+# GROUPS PAGINATION
+# ===========================================
+
+async def groups_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    query = update.callback_query
+    await query.answer()
+
+    if not query.data.startswith("groups_"):
+        return
+
+    page = int(query.data.split("_")[1])
+
+    PER_PAGE = 10
+
+    all_groups = await get_all_groups()
+
+    start = page * PER_PAGE
+    end = start + PER_PAGE
+
+    total = await total_groups()
+
+    text = (
+        f"🏘 <b>Total Groups :</b> {total}\n"
+        f"📄 <b>Page :</b> {page+1}\n\n"
+    )
+
+    for data in all_groups[start:end]:
+
+        chat_id = data["chat_id"]
+
+        try:
+            chat = await context.bot.get_chat(chat_id)
+            members = await context.bot.get_chat_member_count(chat_id)
+            me = await context.bot.get_chat_member(chat_id, context.bot.id)
+
+            status = "👑 Admin" if me.status == "administrator" else "👤 Member"
+
+            try:
+                invite = chat.invite_link if me.status == "administrator" else "Unavailable"
+            except:
+                invite = "Unavailable"
+
+            text += (
+                f"📌 <b>{chat.title}</b>\n"
+                f"🆔 <code>{chat.id}</code>\n"
+                f"👥 {members} Members\n"
+                f"🤖 {status}\n"
+                f"🔗 {invite}\n\n"
+            )
+
+        except:
+            await remove_group(chat_id)
+
+    buttons = []
+
+    row = []
+
+    if page > 0:
+        row.append(
+            InlineKeyboardButton(
+                "⬅ Previous",
+                callback_data=f"groups_{page-1}"
+            )
+        )
+
+    if end < len(all_groups):
+        row.append(
+            InlineKeyboardButton(
+                "➡ Next",
+                callback_data=f"groups_{page+1}"
+            )
+        )
+
+    if row:
+        buttons.append(row)
+
+    buttons.append(
+        [
+            InlineKeyboardButton(
+                "🔄 Refresh",
+                callback_data=f"groups_{page}"
+            )
+        ]
+    )
+
+    await query.edit_message_text(
+        text=text,
+        parse_mode="HTML",
+        disable_web_page_preview=True,
+        reply_markup=InlineKeyboardMarkup(buttons)
+    )
 
 
 # ==============================
