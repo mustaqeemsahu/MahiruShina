@@ -11,7 +11,7 @@ from telegram import (
 from telegram.ext import ContextTypes
 
 from config import GROUP_PHOTO, REPORT_GROUP_ID, WELCOME_EMOJIS
-from database.mongo import add_group
+from database.mongo import add_group, remove_group
 from utils.helpers import now
 import random
 
@@ -30,6 +30,19 @@ async def chat_member_update(update: Update, context: ContextTypes.DEFAULT_TYPE)
     old_status = result.old_chat_member.status
     new_status = result.new_chat_member.status
     user = result.new_chat_member.user
+
+    # =================================
+    # BOT REMOVED FROM GROUP
+    # =================================
+    if (
+        user.id == context.bot.id
+        and new_status in ("left", "kicked")
+    ):
+        try:
+            await remove_group(result.chat.id)
+        except Exception as e:
+            print(f"[ERROR] Remove group failed: {e}")
+        return
 
     # Trigger only when bot is added
     if (
