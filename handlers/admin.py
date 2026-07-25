@@ -44,8 +44,16 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    if update.effective_user.id != ADMIN_IDS:
+    print("GROUPS COMMAND CALLED")
+
+    print("User ID:", update.effective_user.id)
+    print("Admins:", ADMIN_IDS)
+
+    if update.effective_user.id not in ADMIN_IDS:
+        print("NOT ADMIN")
         return
+
+    print("PASSED ADMIN CHECK")
 
     all_groups = await get_all_groups()
 
