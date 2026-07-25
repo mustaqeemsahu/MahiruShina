@@ -1,7 +1,7 @@
 import asyncio
 import time
 
-from telegram import Update
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ContextTypes
 from telegram.error import (
     RetryAfter,
@@ -18,6 +18,7 @@ from database.mongo import (
     groups_col,
     remove_user,
     remove_group,
+    total_groups
 )
 
 # ============================================================
@@ -35,6 +36,86 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"📊 Stats\n\n"
         f"👤 Users : {len(users)}\n"
         f"👥 Groups : {len(groups)}"
+    )
+
+# ===========================
+# /groups
+# ===========================
+
+async def groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+    OWNER_ID = YOUR_OWNER_ID   # Replace with your Telegram ID
+
+    if update.effective_user.id != OWNER_ID:
+        return
+
+    all_groups = await get_all_groups()
+
+    if not all_groups:
+        return await update.message.reply_text("❌ No groups found.")
+
+    PER_PAGE = 10
+    page = 0
+
+    start = page * PER_PAGE
+    end = start + PER_PAGE
+
+    text = (
+        f"🏘 <b>Total Groups :</b> {await total_groups()}\n"
+        f"📄 <b>Page :</b> {page+1}\n\n"
+    )
+
+    valid_groups = []
+
+    for data in all_groups[start:end]:
+
+        chat_id = data["chat_id"]
+
+        try:
+            chat = await context.bot.get_chat(chat_id)
+            members = await context.bot.get_chat_member_count(chat_id)
+            me = await context.bot.get_chat_member(chat_id, context.bot.id)
+
+            status = "👑 Admin" if me.status == "administrator" else "👤 Member"
+
+            invite = "Unavailable"
+
+            try:
+                if me.status == "administrator":
+                    invite = chat.invite_link or "No Invite Link"
+            except:
+                pass
+
+            text += (
+                f"📌 <b>{chat.title}</b>\n"
+                f"🆔 <code>{chat.id}</code>\n"
+                f"👥 {members} Members\n"
+                f"🤖 {status}\n"
+                f"🔗 {invite}\n\n"
+            )
+
+            valid_groups.append(chat_id)
+
+        except Exception:
+
+            await remove_group(chat_id)
+
+    keyboard = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton(
+                    "➡ Next",
+                    callback_data=f"groups_{page+1}"
+                )
+            ]
+        ]
+    )
+
+    await update.message.reply_text(
+        text,
+        parse_mode="HTML",
+        disable_web_page_preview=True,
+        reply_markup=keyboard
     )
 
 # ============================================================
