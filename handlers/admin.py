@@ -44,9 +44,7 @@ async def stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-    OWNER_ID = YOUR_OWNER_ID   # Replace with your Telegram ID
-
-    if update.effective_user.id != OWNER_ID:
+    if update.effective_user.id != ADMIN_IDS:
         return
 
     all_groups = await get_all_groups()
