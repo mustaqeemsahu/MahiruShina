@@ -30,7 +30,7 @@ from handlers.animelist import animelist
 from handlers.group import chat_member_update, welcome_new_members
 from handlers.callback import button_click, groups_callback
 from handlers.inline import inline_query
-from handlers.admin import stats, broadcast, bulk_add, forward_broadcast, uptime
+from handlers.admin import stats, broadcast, bulk_add, forward_broadcast, uptime, groups
 from handlers.misc import (
     help_cmd,
     id_command,
@@ -92,7 +92,7 @@ def main():
     app.add_handler(CommandHandler("bulkadd", bulk_add))
     app.add_handler(CommandHandler("fbc", forward_broadcast))
     app.add_handler(CommandHandler("uptime", uptime))
-    app.add_handler(CommandHandler("groups", groups_callback))
+    app.add_handler(CommandHandler("groups", groups))
 
     # ==========================
     # MESSAGE HANDLER
@@ -102,6 +102,7 @@ def main():
     # ==========================
     # CALLBACK / INLINE
     # ==========================
+    app.add_handler(CallbackQueryHandler(groups_callback, pattern="^groups_"))
     app.add_handler(CallbackQueryHandler(button_click))
     app.add_handler(InlineQueryHandler(inline_query))
 
