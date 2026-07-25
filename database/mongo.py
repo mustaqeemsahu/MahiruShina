@@ -131,6 +131,37 @@ async def create_indexes():
     await anime_col.create_index("keys")
 
 
+# ============================================
+# GROUP DATABASE FUNCTIONS
+# ============================================
+
+groups_col = db["groups"]
+
+
+async def add_group(chat_id: int):
+    """Add group if it doesn't already exist."""
+    if not await groups_col.find_one({"chat_id": chat_id}):
+        await groups_col.insert_one({"chat_id": chat_id})
+
+
+async def remove_group(chat_id: int):
+    """Remove group from database."""
+    await groups_col.delete_one({"chat_id": chat_id})
+
+
+async def get_all_groups():
+    """Return all saved groups."""
+    groups = []
+    async for group in groups_col.find({}):
+        groups.append(group)
+    return groups
+
+
+async def total_groups():
+    """Return total number of groups."""
+    return await groups_col.count_documents({})
+
+
 # ==============================
 # WARN SYSTEM
 # ==============================
