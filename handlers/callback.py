@@ -28,7 +28,7 @@ async def groups_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     page = int(query.data.split("_")[1])
 
-    PER_PAGE = 10
+    PER_PAGE = 5
 
     all_groups = await get_all_groups()
 
