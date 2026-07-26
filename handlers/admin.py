@@ -60,7 +60,7 @@ async def groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not all_groups:
         return await update.message.reply_text("❌ No groups found.")
 
-    PER_PAGE = 10
+    PER_PAGE = 5
     page = 0
 
     start = page * PER_PAGE
