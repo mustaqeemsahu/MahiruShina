@@ -75,7 +75,7 @@ async def groups(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     for data in all_groups[start:end]:
 
-        chat_id = data.get("chat_id", data.get("_id"))
+        chat_id = data["_id"]
 
         if not chat_id:
             continue
