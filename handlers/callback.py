@@ -44,7 +44,7 @@ async def groups_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     for data in all_groups[start:end]:
 
-        chat_id = data["chat_id"]
+        chat_id = data["_id"]
 
         try:
             chat = await context.bot.get_chat(chat_id)
