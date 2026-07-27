@@ -13,6 +13,7 @@ from telegram.ext import (
     CallbackQueryHandler,
     ChatMemberHandler,
     InlineQueryHandler,
+    ConversationHandler,
     filters,
 )
 
@@ -31,14 +32,8 @@ from handlers.group import chat_member_update, welcome_new_members
 from handlers.callback import button_click, groups_callback
 from handlers.inline import inline_query
 from handlers.admin import stats, broadcast, bulk_add, forward_broadcast, uptime, groups
-from handlers.misc import (
-    help_cmd,
-    id_command,
-    owner_command,
-    adminlist_command,
-    roast_user,
-    ping,
-)
+from handlers.request import request_start, anime_name, language_callback, dub_callback, season, extra, skip_season, skip_extra, cancel_request, ANIME, LANGUAGE, DUB, SEASON, EXTRA
+from handlers.misc import help_cmd, id_command, owner_command, adminlist_command, roast_user, ping
 
 # ==============================
 # LOGGING
@@ -55,6 +50,42 @@ def main():
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     # ==========================
+    # CONVERSATION HANDLER
+    # ==========================
+    request_handler = ConversationHandler(
+    entry_points=[
+        CommandHandler("request", request_start)
+    ],
+    states={
+        ANIME: [
+            MessageHandler(filters.TEXT & ~filters.COMMAND, anime_name)
+        ],
+
+        LANGUAGE: [
+            CallbackQueryHandler(language_callback, pattern="^lang_")
+        ],
+
+        DUB: [
+            CallbackQueryHandler(dub_callback, pattern="^dub_")
+        ],
+
+        SEASON: [
+            MessageHandler(filters.TEXT & ~filters.COMMAND, season),
+            CommandHandler("skip", skip_season),
+        ],
+
+        EXTRA: [
+            MessageHandler(filters.TEXT & ~filters.COMMAND, extra),
+            CommandHandler("skip", skip_extra),
+        ],
+    },
+    fallbacks=[
+        CommandHandler("cancel", cancel_request)
+    ],
+    allow_reentry=True,
+    )
+
+    # ==========================
     # DATABASE INIT (ASYNC SAFE)
     # ==========================
     try:
@@ -68,6 +99,7 @@ def main():
     # ==========================
     # USER COMMANDS
     # ==========================
+    app.add_handler(request_handler)
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("help", help_cmd))
     app.add_handler(CommandHandler("anime", anime_search))
