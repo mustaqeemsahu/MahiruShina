@@ -255,6 +255,18 @@ async def request_exists(user_id: int, anime: str, language: str):
             )
 
 
+async def update_request_reply(req_id, reply):
+
+    await requests_col.update_one(
+        {"_id": req_id},
+        {
+            "$set": {
+                "admin_reply": reply
+            }
+        }
+    )
+
+
 # ==============================
 # WARN SYSTEM
 # ==============================
