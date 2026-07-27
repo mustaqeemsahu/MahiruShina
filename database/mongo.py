@@ -141,6 +141,119 @@ async def create_indexes():
     await anime_col.create_index("name")
     await anime_col.create_index("keys")
 
+# ==========================================================
+# REQUEST SYSTEM DATABASE
+# ==========================================================
+
+from datetime import datetime
+import random
+
+requests_col = db["requests"]
+
+
+async def generate_request_id():
+    """Generate unique request ID like REQ100123"""
+    while True:
+        req_id = f"REQ{random.randint(100000, 999999)}"
+        exists = await requests_col.find_one({"_id": req_id})
+        if not exists:
+            return req_id
+
+
+async def create_request(
+    user_id: int,
+    username: str,
+    full_name: str,
+    anime: str,
+    language: str,
+    dub: str,
+    season: str,
+    extra: str,
+):
+    req_id = await generate_request_id()
+
+    data = {
+        "_id": req_id,
+        "user_id": user_id,
+        "username": username or "",
+        "full_name": full_name,
+        "anime": anime,
+        "language": language,
+        "dub": dub,
+        "season": season,
+        "extra": extra,
+        "status": "Pending",
+        "admin_reply": "",
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+    }
+
+    await requests_col.insert_one(data)
+    return req_id
+
+
+async def get_request(req_id: str):
+    return await requests_col.find_one({"_id": req_id})
+
+
+async def update_request_status(
+    req_id: str,
+    status: str,
+    admin_reply: str = "",
+):
+    await requests_col.update_one(
+        {"_id": req_id},
+        {
+            "$set": {
+                "status": status,
+                "admin_reply": admin_reply,
+                "updated_at": datetime.utcnow(),
+            }
+        },
+    )
+
+
+async def delete_request(req_id: str):
+    await requests_col.delete_one({"_id": req_id})
+
+
+async def get_pending_requests():
+    requests = []
+    async for req in requests_col.find({"status": "Pending"}):
+        requests.append(req)
+    return requests
+
+
+async def get_user_requests(user_id: int):
+    requests = []
+    async for req in requests_col.find({"user_id": user_id}):
+        requests.append(req)
+    return requests
+
+
+async def total_requests():
+    return await requests_col.count_documents({})
+
+
+async def pending_requests():
+    return await requests_col.count_documents(
+        {"status": "Pending"}
+    )
+
+
+async def request_exists(user_id: int, anime: str, language: str):
+    """
+    Prevent duplicate pending requests.
+    """
+    return await requests_col.find_one(
+        {
+            "user_id": user_id,
+            "anime": {"$regex": f"^{anime}$", "$options": "i"},
+            "language": language,
+            "status": "Pending",
+        }
+            )
+
 
 # ==============================
 # WARN SYSTEM
