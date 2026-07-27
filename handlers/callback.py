@@ -8,6 +8,7 @@ from telegram import (
     InlineKeyboardMarkup
 )
 from telegram.ext import ContextTypes
+from telegram.error import BadRequest
 
 from database.mongo import get_all_anime, get_all_groups, remove_group, total_groups
 from handlers.animelist import build_page
@@ -163,6 +164,37 @@ def build_buttons(anime):
     return InlineKeyboardMarkup(keyboard)
 
 # ==============================
+# CALLBACK HANDLER
+# ==============================
+
+async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    data = query.data
+    animes = await get_all_anime()
+
+    # ==============================
+    # ANIME BUTTON
+    # ==============================
+    if data.startswith("anime_"):
+        name = data.replace("anime_", "").lower()
+
+        for anime in animes:
+            if anime["name"].lower() == name:
+                try:
+                    await query.message.reply_sticker(
+                        sticker=anime["sticker"],
+                        reply_markup=build_buttons(anime)
+                    )
+                except Exception:
+                    await query.message.reply_text(
+                        anime["name"],
+                        reply_markup=build_buttons(anime)
+                    )
+                return
+                
+# ==============================
 # REQUEST BUTTONS
 # ==============================
 
@@ -245,39 +277,7 @@ elif data.startswith("req_"):
     )
 
     return
-
-# ==============================
-# CALLBACK HANDLER
-# ==============================
-
-async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    query = update.callback_query
-    await query.answer()
-
-    data = query.data
-    animes = await get_all_anime()
-
-    # ==============================
-    # ANIME BUTTON
-    # ==============================
-    if data.startswith("anime_"):
-        name = data.replace("anime_", "").lower()
-
-        for anime in animes:
-            if anime["name"].lower() == name:
-                try:
-                    await query.message.reply_sticker(
-                        sticker=anime["sticker"],
-                        reply_markup=build_buttons(anime)
-                    )
-                except Exception:
-                    await query.message.reply_text(
-                        anime["name"],
-                        reply_markup=build_buttons(anime)
-                    )
-                return
-                
-                
+           
     # ==============================
     # IGNORE BUTTON
     # ==============================
