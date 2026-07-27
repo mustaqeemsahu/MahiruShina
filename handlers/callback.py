@@ -162,6 +162,89 @@ def build_buttons(anime):
 
     return InlineKeyboardMarkup(keyboard)
 
+# ==============================
+# REQUEST BUTTONS
+# ==============================
+
+elif data.startswith("req_"):
+
+    action, req_id = data.split(":", 1)
+
+    req = await get_request(req_id)
+
+    if not req:
+        await query.answer(
+            "❌ Request not found.",
+            show_alert=True
+        )
+        return
+
+    user_id = req["user_id"]
+
+    status_map = {
+        "req_added": (
+            "Added ✅",
+            "🎉 Your requested anime has been added!\n\n"
+            f"🆔 {req_id}"
+        ),
+
+        "req_working": (
+            "Working 🔄",
+            "🛠️ Your request is currently being worked on.\n\n"
+            f"🆔 {req_id}"
+        ),
+
+        "req_denied": (
+            "Not Possible ❌",
+            "😔 Sorry.\n\n"
+            "This anime isn't available right now.\n\n"
+            f"🆔 {req_id}"
+        ),
+
+        "req_close": (
+            "Closed 🔒",
+            "✅ Your request has been closed.\n\n"
+            f"🆔 {req_id}"
+        ),
+    }
+
+    if action not in status_map:
+        return
+
+    status, user_message = status_map[action]
+
+    await update_request_status(req_id, status)
+
+    try:
+        await context.bot.send_message(
+            chat_id=user_id,
+            text=user_message
+        )
+    except Exception:
+        pass
+
+    text = query.message.text_html
+
+    if "🟡 <b>Status:</b>" in text:
+        text = text.split("🟡 <b>Status:</b>")[0]
+
+    text += f"\n\n🟢 <b>Status:</b> {status}"
+
+    try:
+        await query.edit_message_text(
+            text=text,
+            parse_mode="HTML",
+            reply_markup=query.message.reply_markup
+        )
+    except BadRequest as e:
+        if "Message is not modified" not in str(e):
+            raise
+
+    await query.answer(
+        f"Request marked as {status}"
+    )
+
+    return
 
 # ==============================
 # CALLBACK HANDLER
@@ -193,7 +276,8 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         reply_markup=build_buttons(anime)
                     )
                 return
-
+                
+                
     # ==============================
     # IGNORE BUTTON
     # ==============================
