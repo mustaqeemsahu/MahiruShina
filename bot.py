@@ -136,9 +136,9 @@ def main():
         admin_request_reply,
     ),
     group=0,
-)
+    )
 
-app.add_handler(
+    app.add_handler(
     MessageHandler(
         filters.TEXT & ~filters.COMMAND,
         direct_search,
