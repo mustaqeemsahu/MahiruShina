@@ -29,7 +29,7 @@ from handlers.anime import anime_search, add_anime, del_anime
 from handlers.search import improved_anime, button_search, direct_search
 from handlers.animelist import animelist
 from handlers.group import chat_member_update, welcome_new_members
-from handlers.callback import button_click, groups_callback
+from handlers.callback import button_click, groups_callback, admin_request_reply, cancel_reply
 from handlers.inline import inline_query
 from handlers.admin import stats, broadcast, bulk_add, forward_broadcast, uptime, groups
 from handlers.request import request_start, anime_name, language_callback, dub_callback, season, extra, skip_season, skip_extra, cancel_request, ANIME, LANGUAGE, DUB, SEASON, EXTRA
@@ -125,11 +125,26 @@ def main():
     app.add_handler(CommandHandler("fbc", forward_broadcast))
     app.add_handler(CommandHandler("uptime", uptime))
     app.add_handler(CommandHandler("groups", groups))
+    app.add_handler(CommandHandler("cancelreply", cancel_reply))
 
     # ==========================
     # MESSAGE HANDLER
     # ==========================
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, direct_search))
+    app.add_handler(
+    MessageHandler(
+        filters.TEXT & ~filters.COMMAND,
+        admin_request_reply,
+    ),
+    group=0,
+)
+
+app.add_handler(
+    MessageHandler(
+        filters.TEXT & ~filters.COMMAND,
+        direct_search,
+    ),
+    group=1,
+    )
 
     # ==========================
     # CALLBACK / INLINE
