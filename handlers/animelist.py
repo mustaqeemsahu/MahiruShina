@@ -84,13 +84,13 @@ async def animelist(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Hindi
         if hindi and hindi != "-":
             links.append(
-                f"<a href='{hindi}'>🇮🇳 Hindi</a>"
+                f"<a href='{hindi}'>𝗛𝗶𝗻𝗱𝗶 𝗗𝘂𝗯</a>"
             )
 
         # English
         if english and english != "-":
             links.append(
-                f"<a href='{english}'>🇺🇸 English</a>"
+                f"<a href='{english}'>𝗘𝗻𝗴𝗹𝗶𝘀𝗵</a>"
             )
 
         # Old Database Support
