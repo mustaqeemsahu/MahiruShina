@@ -273,7 +273,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         return
 
-# ==========================================
+    # ==========================================
     # REQUEST CALLBACKS
     # ==========================================
 
@@ -382,6 +382,19 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # ==========================================
+    # IGNORE BUTTON
+    # ==========================================
+
+    elif data == "ignore":
+
+        await query.answer(
+            "Use Previous / Next buttons only.",
+            show_alert=False,
+        )
+
+        return
+
+    # ==========================================
     # ADMIN CUSTOM REPLY
     # ==========================================
 
@@ -434,19 +447,6 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             "❌ Reply cancelled."
         )
-
-    # ==========================================
-    # IGNORE BUTTON
-    # ==========================================
-
-    elif data == "ignore":
-
-        await query.answer(
-            "Use Previous / Next buttons only.",
-            show_alert=False,
-        )
-
-        return
 
     # ==========================================
     # ANIME LIST PAGINATION
