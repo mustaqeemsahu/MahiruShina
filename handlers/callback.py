@@ -395,60 +395,6 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # ==========================================
-    # ADMIN CUSTOM REPLY
-    # ==========================================
-
-    async def admin_request_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-        user_id = update.effective_user.id
-
-        if user_id not in pending_replies:
-            return
-
-        req_id = pending_replies.pop(user_id)
-
-        req = await get_request(req_id)
-
-        if not req:
-            await update.message.reply_text("❌ Request not found.")
-            return
-
-        reply = update.message.text
-
-        await update_request_reply(req_id, reply)
-
-        try:
-            await context.bot.send_message(
-                chat_id=req["user_id"],
-                text=(
-                    "📩 **Reply From Admin**\n\n"
-                    f"{reply}\n\n"
-                    f"🆔 Request ID: `{req_id}`"
-                ),
-                parse_mode="Markdown",
-            )
-        except Exception:
-            await update.message.reply_text(
-                "⚠️ User has blocked the bot or cannot be reached."
-            )
-            return
-
-        await update.message.reply_text("✅ Reply sent successfully.")
-
-
-    # ==========================================
-    # CANCEL ADMIN REPLY
-    # ==========================================
-
-    async def cancel_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-
-        pending_replies.pop(update.effective_user.id, None)
-
-        await update.message.reply_text(
-            "❌ Reply cancelled."
-        )
-
-    # ==========================================
     # ANIME LIST PAGINATION
     # ==========================================
 
@@ -535,6 +481,60 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 raise
 
         return
+
+    # ==========================================
+    # ADMIN CUSTOM REPLY
+    # ==========================================
+
+    async def admin_request_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+        user_id = update.effective_user.id
+
+        if user_id not in pending_replies:
+            return
+
+        req_id = pending_replies.pop(user_id)
+
+        req = await get_request(req_id)
+
+        if not req:
+            await update.message.reply_text("❌ Request not found.")
+            return
+
+        reply = update.message.text
+
+        await update_request_reply(req_id, reply)
+
+        try:
+            await context.bot.send_message(
+                chat_id=req["user_id"],
+                text=(
+                    "📩 **Reply From Admin**\n\n"
+                    f"{reply}\n\n"
+                    f"🆔 Request ID: `{req_id}`"
+                ),
+                parse_mode="Markdown",
+            )
+        except Exception:
+            await update.message.reply_text(
+                "⚠️ User has blocked the bot or cannot be reached."
+            )
+            return
+
+        await update.message.reply_text("✅ Reply sent successfully.")
+
+
+    # ==========================================
+    # CANCEL ADMIN REPLY
+    # ==========================================
+
+    async def cancel_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+        pending_replies.pop(update.effective_user.id, None)
+
+        await update.message.reply_text(
+            "❌ Reply cancelled."
+        )
 
     # ==========================================
     # UNKNOWN CALLBACK
