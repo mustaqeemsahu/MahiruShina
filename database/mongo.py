@@ -3,6 +3,7 @@
 # ==============================
 
 from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo import DeleteOne
 from config import MONGO_URI
 import time
 
@@ -125,13 +126,20 @@ async def add_anime_db(
     # Refresh cache
     await load_anime_cache()
 
-
 async def delete_anime_db(name):
-    await anime_col.delete_one({"name": name})
 
-    # 🔥 Refresh cache instantly
+    result = await anime_col.delete_one(
+        {
+            "name": {
+                "$regex": f"^{name}$",
+                "$options": "i"
+            }
+        }
+    )
+
     await load_anime_cache()
 
+    return result.deleted_count
 
 # ==============================
 # FAST SEARCH (INDEX BASED)
