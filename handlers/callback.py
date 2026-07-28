@@ -483,6 +483,19 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # ==========================================
+    # UNKNOWN CALLBACK
+    # ==========================================
+
+    else:
+
+        await query.answer(
+            "Unknown button.",
+            show_alert=False,
+        )
+
+        return
+
+    # ==========================================
     # ADMIN CUSTOM REPLY
     # ==========================================
 
@@ -534,17 +547,4 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await update.message.reply_text(
             "❌ Reply cancelled."
-        )
-
-    # ==========================================
-    # UNKNOWN CALLBACK
-    # ==========================================
-
-    else:
-
-        await query.answer(
-            "Unknown button.",
-            show_alert=False,
-        )
-
-        return
+    )
