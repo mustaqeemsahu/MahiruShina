@@ -12,7 +12,7 @@ from telegram.ext import (
     filters,
 )
 
-from config import LOG_CHANNEL, REPORT_GROUP_ID
+from config import REPORT_GROUP_ID
 from database.mongo import (
     create_request,
     request_exists,
