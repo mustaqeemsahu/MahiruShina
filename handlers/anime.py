@@ -73,14 +73,27 @@ async def add_anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
 # ==============================
 
 async def del_anime(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
     if update.effective_user.id not in ADMIN_IDS:
         return
 
-    name = update.message.text.replace("/del", "", 1).strip().lower()
-    await delete_anime_db(name)
+    name = update.message.text.replace("/del", "", 1).strip()
 
-    await update.message.reply_text("✅ Deleted (if existed).")
+    if not name:
+        return await update.message.reply_text(
+            "Usage:\n/del Anime Name"
+        )
 
+    deleted = await delete_anime_db(name)
+
+    if deleted:
+        await update.message.reply_text(
+            f"✅ Deleted: {name}"
+        )
+    else:
+        await update.message.reply_text(
+            "❌ Anime not found."
+        )
 
 # ==============================
 # EXACT SEARCH (/anime)
@@ -114,7 +127,7 @@ def normalize(text: str) -> str:
 # AUTO DELETE
 # ==============================
 
-async def auto_delete(message, sec=10):
+async def auto_delete(message, sec=42000):
     await asyncio.sleep(sec)
 
     try:
