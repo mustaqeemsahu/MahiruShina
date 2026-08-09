@@ -165,7 +165,7 @@ def build_buttons(anime):
         keyboard.append(
             [
                 InlineKeyboardButton(
-                    "𝗪𝗮𝘁𝗰𝗵 𝗜𝗻 𝗛𝗶𝗻𝗱𝗶",
+                    "𝖶𝖺𝗍𝖼𝗁 𝖨𝗇 𝖧𝗂𝗇𝖽𝗂 𝖣𝗎𝖻",
                     url=hindi,
                 )
             ]
@@ -178,7 +178,7 @@ def build_buttons(anime):
         keyboard.append(
             [
                 InlineKeyboardButton(
-                    "𝗪𝗮𝘁𝗰𝗵 𝗜𝗻 𝗘𝗻𝗴𝗹𝗶𝘀𝗵",
+                    "𝖶𝖺𝗍𝖼𝗁 𝖨𝗇 𝖩𝖺𝗉/𝖤𝗇𝗀𝗅𝗂𝗌𝗁",
                     url=english,
                 )
             ]
@@ -208,7 +208,7 @@ def build_buttons(anime):
     keyboard.append(
         [
             InlineKeyboardButton(
-                "𝗝𝗼𝗶𝗻 𝗠𝗮𝗶𝗻 𝗖𝗵𝗮𝗻𝗻𝗲𝗹",
+                "𝖩𝗈𝗂𝗇 𝖬𝖺𝗂𝗇 𝖢𝗁𝖺𝗇𝗇𝖾",
                 url=f"https://t.me/{FORCE_CHANNEL.replace('@', '')}",
             )
         ]
@@ -400,92 +400,100 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     elif data.startswith("alist_"):
 
-    page = int(data.split("_")[1])
+        page = int(data.split("_")[1])
 
-    animes = sorted(
-        animes,
-        key=lambda x: x["name"].lower()
-    )
+        animes = sorted(
+            animes,
+            key=lambda x: x["name"].lower()
+        )
 
-    page_data, page, total_pages = build_page(
-        animes,
-        page
-    )
+        page_data, page, total_pages = build_page(
+            animes,
+            page
+        )
 
-    text = (
-        "📚 <b>Anime Collection</b>\n\n"
-        "╭━━━━━━━━━━━━━━━━━━╮\n"
-        f"📄 <b>Page :</b> {page}/{total_pages}\n"
-        f"🎬 <b>Total :</b> {len(animes)} Anime\n"
-        "╰━━━━━━━━━━━━━━━━━━╯\n\n"
-    )
+        text = (
+            "📚 <b>Anime Collection</b>\n\n"
+            "╭━━━━━━━━━━━━━━━━━━╮\n"
+            f"📄 <b>Page :</b> {page}/{total_pages}\n"
+            f"🎬 <b>Total :</b> {len(animes)} Anime\n"
+            "╰━━━━━━━━━━━━━━━━━━╯\n\n"
+        )
 
-    start_no = (page - 1) * ANIME_PER_PAGE
+        start_no = (page - 1) * ANIME_PER_PAGE
 
-    for i, anime in enumerate(
-        page_data,
-        start=start_no + 1
-    ):
+        for i, anime in enumerate(
+            page_data,
+            start=start_no + 1
+        ):
 
-        hindi = anime.get("hindi_link", "-")
-        english = anime.get("english_link", "-")
-        old = anime.get("link", "-")
+            hindi = anime.get("hindi_link", "-")
+            english = anime.get("english_link", "-")
+            old = anime.get("link", "-")
 
-        text += f"<b>{i}. {anime['name']}</b>\n"
-        text += "➥ "
+            text += f"<b>{i}. {anime['name']}</b>\n"
+            text += "➥ "
 
-        links = []
+            links = []
 
-        if hindi and hindi != "-":
-            links.append(
-                f"<a href='{hindi}'>𝗛𝗶𝗻𝗱𝗶 𝗗𝘂𝗯</a>"
+            if hindi and hindi != "-":
+                links.append(
+                    f"<a href='{hindi}'>𝗛𝗶𝗻𝗱𝗶 𝗗𝘂𝗯</a>"
+                )
+
+            if english and english != "-":
+                links.append(
+                    f"<a href='{english}'>𝗘𝗻𝗴𝗹𝗶𝘀𝗵</a>"
+                )
+
+            if old and old != "-" and not links:
+                links.append(
+                    f"<a href='{old}'>🎬 Watch</a>"
+                )
+
+            if links:
+                text += " | ".join(links)
+            else:
+                text += "❌ No Link"
+
+            text += "\n\n"
+
+        prev_page = page - 1 if page > 1 else 1
+        next_page = page + 1 if page < total_pages else total_pages
+
+        keyboard = InlineKeyboardMarkup(
+            [
+                [
+                    InlineKeyboardButton(
+                        "⏪ Previous",
+                        callback_data=f"alist_{prev_page}"
+                    ),
+                    InlineKeyboardButton(
+                        f"📄 {page}/{total_pages}",
+                        callback_data="ignore"
+                    ),
+                    InlineKeyboardButton(
+                        "Next ⏩",
+                        callback_data=f"alist_{next_page}"
+                    ),
+                ]
+            ]
+        )
+
+        try:
+            await query.edit_message_text(
+                text=text,
+                parse_mode="HTML",
+                disable_web_page_preview=True,
+                reply_markup=keyboard,
             )
 
-        if english and english != "-":
-            links.append(
-                f"<a href='{english}'>𝐉𝐚𝐩𝐚𝐧𝐞𝐬𝐞/𝗘𝗻𝗴𝗹𝗶𝘀𝗵</a>"
-            )
+        except BadRequest as e:
 
-        if old and old != "-" and not links:
-            links.append(
-                f"<a href='{old}'>🎬 Watch</a>"
-            )
+            if "Message is not modified" not in str(e):
+                raise
 
-        if links:
-            text += " | ".join(links)
-        else:
-            text += "❌ No Link"
-
-        text += "\n\n"
-
-    prev_page = page - 1 if page > 1 else 1
-    next_page = page + 1 if page < total_pages else total_pages
-
-    keyboard = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton(
-                "⏪ Previous",
-                callback_data=f"alist_{prev_page}"
-            ),
-            InlineKeyboardButton(
-                f"📄 {page}/{total_pages}",
-                callback_data="ignore"
-            ),
-            InlineKeyboardButton(
-                "Next ⏩",
-                callback_data=f"alist_{next_page}"
-            )
-        ]
-    ])
-
-    await query.edit_message_text(
-        text=text,
-        parse_mode="HTML",
-        disable_web_page_preview=True,
-        reply_markup=keyboard
-    )
-
-    return
+        return
 
     # ==========================================
     # UNKNOWN CALLBACK
