@@ -443,7 +443,7 @@ async def button_click(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
             if english and english != "-":
                 links.append(
-                    f"<a href='{english}'>𝗘𝗻𝗴𝗹𝗶𝘀𝗵</a>"
+                    f"<a href='{english}'>𝐉𝐚𝐩𝐚𝐧𝐞𝐬𝐞/𝗘𝗻𝗴𝗹𝗶𝘀𝗵</a>"
                 )
 
             if old and old != "-" and not links:
