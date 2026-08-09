@@ -66,7 +66,7 @@ def build_buttons(anime):
     if hindi and hindi != "-":
         keyboard.append([
             InlineKeyboardButton(
-                "𝗪𝗮𝘁𝗰𝗵 𝗜𝗻 𝗛𝗶𝗻𝗱𝗶",
+                "𝖶𝖺𝗍𝖼𝗁 𝖨𝗇 𝖧𝗂𝗇𝖽𝗂 𝖣𝗎𝖻",
                 url=hindi
             )
         ])
@@ -75,7 +75,7 @@ def build_buttons(anime):
     if english and english != "-":
         keyboard.append([
             InlineKeyboardButton(
-                "𝗪𝗮𝘁𝗰𝗵 𝗜𝗻 𝗘𝗻𝗴𝗹𝗶𝘀𝗵",
+                "𝖶𝖺𝗍𝖼𝗁 𝖨𝗇 𝖩𝖺𝗉/𝖤𝗇𝗀𝗅𝗂𝗌𝗁",
                 url=english
             )
         ])
@@ -96,7 +96,7 @@ def build_buttons(anime):
     # Join Channel
     keyboard.append([
         InlineKeyboardButton(
-            "𝗝𝗼𝗶𝗻 𝗠𝗮𝗶𝗻 𝗖𝗵𝗮𝗻𝗻𝗲𝗹",
+            "𝖩𝗈𝗂𝗇 𝖬𝖺𝗂𝗇 𝖢𝗁𝖺𝗇𝗇𝖾𝗅",
             url=f"https://t.me/{FORCE_CHANNEL.replace('@', '')}"
         )
     ])
